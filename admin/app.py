@@ -3,6 +3,20 @@ import socket
 from stem.control import Controller
 from flask import Flask
 
+from common import Common
+from config import Config
+from onion import Onion
+
+
+# Create a common object
+common = Common()
+
+# Load the config
+config = Config(common)
+
+# Create the onion object
+onion = Onion(common, config)
+
 
 app = Flask(__name__)
 
