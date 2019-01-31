@@ -1,0 +1,12 @@
+version: '3'
+services:
+  admin:
+    build: admin
+    ports:
+    - "127.0.0.1:5000:5000"
+    volumes:
+    - ./admin:/app
+  tor:
+    build: tor
+    ports:
+    - "9051"
