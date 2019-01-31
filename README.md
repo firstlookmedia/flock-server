@@ -2,10 +2,17 @@
 
 Flock is a privacy-preserving fleet management system powered by osquery, the Elastic Stack, and Tor onion services.
 
-**Dependencies:**
+## Getting started
 
-- Docker
-- Docker Compose
+You need **Docker** and **Docker Compose**. To start all the containers:
+
+```sh
+docker-compose up
+```
+
+Then you can visit http://127.0.0.1:5000 to view the admin web app.
+
+## Development notes
 
 **Adding python dependencies to admin**
 
