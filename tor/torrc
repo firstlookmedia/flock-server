@@ -1,2 +1,16 @@
 Log notice file /var/log/tor/log
 ControlPort 9052 # 9052 on 127.0.0.1, but 9051 on 0.0.0.0
+
+# The server doesn't have anonymity
+HiddenServiceNonAnonymousMode 1
+HiddenServiceSingleHopMode 1
+
+# Onion service for admin web app
+HiddenServiceDir /var/lib/tor/onion-admin
+HiddenServiceVersion 3
+HiddenServicePort 80 127.0.0.1:5000
+
+# Onion service for Kibana
+HiddenServiceDir /var/lib/tor/onion-kibana
+HiddenServiceVersion 3
+HiddenServicePort 80 127.0.0.1:5601
