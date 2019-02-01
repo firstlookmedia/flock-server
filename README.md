@@ -10,9 +10,9 @@ You need **Docker** and **Docker Compose**. To start all the containers:
 docker-compose up
 ```
 
-You can visit http://127.0.0.1:5000/ to view the admin web app.
+You can visit http://127.0.0.1:5000/ to view the admin web app and http://127.0.0.1:5601/ to see Kibana.
 
-You can visit http://127.0.0.1:5601/ to see Kibana.
+Also, look inside `data/tor-lib/onion-admin/hostname` and `data/tor-lib/onion-kibana/hostname` to see the Tor onion service addresses to load these two services as well.
 
 
 ## Development notes
