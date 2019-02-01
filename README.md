@@ -10,7 +10,10 @@ You need **Docker** and **Docker Compose**. To start all the containers:
 docker-compose up
 ```
 
-Then you can visit http://127.0.0.1:5000 to view the admin web app.
+You can visit http://127.0.0.1:5000/ to view the admin web app.
+
+You can visit http://127.0.0.1:5601/ to see Kibana.
+
 
 ## Development notes
 
