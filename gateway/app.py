@@ -6,9 +6,6 @@ from common import Common
 # Create a common object
 common = Common()
 
-# Load the config
-config = Config(common)
-
 app = Flask(__name__)
 
 @app.route("/")
