@@ -25,3 +25,12 @@ You need **Docker** and **Docker Compose**. To start all the containers:
 ```sh
 docker-compose up
 ```
+
+## Developer notes
+
+To edit pip dependencies in the gateway container, start a new container and then run `pipenv` commands, like `pipenv install requests`. You can start the container with pipenv like:
+
+```
+cd gateway
+./pipenv_shell.sh
+```

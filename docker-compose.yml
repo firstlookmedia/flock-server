@@ -1,19 +1,12 @@
 version: '3'
 services:
-  admin:
-    build: admin
+  gateway:
+    build: gateway
     ports:
       - "127.0.0.1:5000:5000"
     volumes:
-      - ./data/admin:/data
+      - ./data/gateway:/data
       - ./admin:/app
-  tor:
-    build: tor
-    ports:
-      - "9051"
-    volumes:
-      - ./data/tor-lib:/var/lib/tor
-      - ./data/tor-log:/var/log/tor
   elasticsearch:
     image: "elasticsearch:6.5.4@sha256:7053b3979a1dd709f2a225d52bc53622714790b13d88cf08164d252291ab8b61"
     environment:

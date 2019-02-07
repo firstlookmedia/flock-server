@@ -6,4 +6,4 @@ class Common(object):
         self.log('Common.__init__', 'init')
 
     def log(self, src, message):
-        print("💬 {} | {}".format(src, message))
+        print("◦ {} | {}".format(src, message))
