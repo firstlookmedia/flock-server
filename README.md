@@ -28,6 +28,43 @@ docker-compose up
 
 ## Developer notes
 
+### Gateway API
+
+#### Register to receive an authentication token
+
+Example request:
+
+```
+$ curl https://flock-gateway/register --data "username=insert_unique_uuid_here"
+```
+
+Example response:
+
+```
+{
+  "error": false,
+  "auth_token": "d7fda212e0a1d309131e874523037031"
+}
+```
+
+#### Send logs to the gateway
+
+Example request:
+
+```
+$ curl https://flock-gateway/submit -H "Authentication: Basic insert_unique_uuid_here:ZDdmZGEyMTJlMGExZDMwOTEzMWU4NzQ1MjMwMzcwMzE="
+```
+
+Example response:
+
+```
+{
+  "error": false
+}
+```
+
+### Modifying gateway pip dependencies
+
 To edit pip dependencies in the gateway container, start a new container and then run `pipenv` commands, like `pipenv install requests`. You can start the container with pipenv like:
 
 ```
