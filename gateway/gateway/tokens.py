@@ -4,7 +4,7 @@ import secrets
 
 
 class Tokens(object):
-    def __init__(self, path='/data/tokens.json'):
+    def __init__(self, path):
         self.path = path
         self.load()
 

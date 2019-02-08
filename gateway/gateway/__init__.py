@@ -7,17 +7,19 @@ from elasticsearch import Elasticsearch
 from .tokens import Tokens
 
 
-# Load tokens
-tokens = Tokens()
-
-# Connect to ElasticSearch
-es = Elasticsearch(['elasticsearch:9200'])
-
-
-def create_app():
+def create_app(test_config=None):
     # Flask
     app = Flask(__name__)
+    if test_config is None:
+        app.config.update({'TOKENS_PATH': '/data/tokens.json'})
+    else:
+        app.config.update(test_config)
 
+    # Load tokens
+    tokens = Tokens(app.config['TOKENS_PATH'])
+
+    # Connect to ElasticSearch
+    es = Elasticsearch(['elasticsearch:9200'])
 
     def check_auth(username, password):
         return tokens.exists(username) and password == tokens.get(username)
@@ -62,6 +64,12 @@ def create_app():
 
         if not username:
             return api_error("You must provide a username")
+
+        # Validate username
+        valid_chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890_-'
+        for c in username:
+            if c not in valid_chars:
+                return api_error("Usernames must only contain letters, numbers, '-', or '_'")
 
         if tokens.exists(username):
             return api_error("That username is already registered")
