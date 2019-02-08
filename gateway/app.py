@@ -67,7 +67,9 @@ def api_error(error_msg):
     }), status=400, mimetype="application/json")
 
 
-def api_success(success_obj):
+def api_success(success_obj=None):
+    if not success_obj:
+        success_obj = {}
     success_obj["error"] = False
     return Response(json.dumps(success_obj), status=200, mimetype="application/json")
 
@@ -94,7 +96,19 @@ def register():
 @app.route("/submit", methods=["POST"])
 @requires_auth
 def submit():
-    return api_error("Not implemented yet")
+    # Validate that the data is JSON
+    try:
+        obj = json.loads(request.data)
+    except:
+        return api_error("Invalid JSON object")
+
+    # Validate that host_uuid is the username
+    if ('host_uuid' not in obj) or (request.authorization['username'] != obj['host_uuid']):
+        return api_error("Data does not contain the corrent host_uuid")
+
+    # TODO: push data into ElasticSearch
+
+    return api_success()
 
 
 if __name__ == '__main__':
