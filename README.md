@@ -26,6 +26,8 @@ You need **Docker** and **Docker Compose**. To start all the containers:
 docker-compose up
 ```
 
+The gateway web interface will be at http://127.0.0.1:5000, and Kibana will be http://127.0.0.1:5601.
+
 ## Developer notes
 
 ### Gateway API
