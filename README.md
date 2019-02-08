@@ -23,10 +23,26 @@ The Flock server includes several components, running in containers, which will 
 You need **Docker** and **Docker Compose**. To start all the containers:
 
 ```sh
-docker-compose up
+$ docker-compose up
 ```
 
 The gateway web interface will be at http://127.0.0.1:5000, and Kibana will be http://127.0.0.1:5601.
+
+## To run tests
+
+Start the test containers (which use different data volumes), and then run the gateway tests:
+
+```
+$ cd tests
+$ docker-compose start
+$ docker exec -it tests_gateway_1 pipenv run python -m pytest
+```
+
+When you're done, stop the test containers:
+
+```
+$ docker-compose stop
+```
 
 ## Developer notes
 

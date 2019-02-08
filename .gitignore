@@ -1,4 +1,7 @@
 data/gateway
 data/elasticsearch
 
+tests/data/gateway
+tests/data/elasticsearch
+
 .DS_Store
