@@ -3,6 +3,7 @@ import json
 import secrets
 from functools import wraps
 from flask import Flask, request, Response
+from elasticsearch import Elasticsearch
 
 
 class Tokens(object):
@@ -37,8 +38,13 @@ class Tokens(object):
         self.save()
         return token
 
-
+# Load tokens
 tokens = Tokens()
+
+# Connect to ElasticSearch
+es = Elasticsearch(['elasticsearch:9200'])
+
+# Flask
 app = Flask(__name__)
 
 
