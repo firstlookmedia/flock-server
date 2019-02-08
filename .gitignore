@@ -1,6 +1,4 @@
-data/admin
-data/tor-lib
-data/tor-log
+data/gateway
 data/elasticsearch
 
 .DS_Store

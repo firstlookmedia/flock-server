@@ -35,15 +35,15 @@ docker-compose up
 Example request:
 
 ```
-$ curl https://flock-gateway/register --data "username=insert_unique_uuid_here"
+$ curl https://flock-gateway/register --data "username=insert_endpoint_uuid_here"
 ```
 
 Example response:
 
 ```
 {
-  "error": false,
-  "auth_token": "d7fda212e0a1d309131e874523037031"
+  "auth_token": "d7fda212e0a1d309131e874523037031",
+  "error": false
 }
 ```
 
@@ -52,7 +52,7 @@ Example response:
 Example request:
 
 ```
-$ curl https://flock-gateway/submit -H "Authentication: Basic insert_unique_uuid_here:ZDdmZGEyMTJlMGExZDMwOTEzMWU4NzQ1MjMwMzcwMzE="
+$ curl https://flock-gateway/submit -H "Authentication: Basic insert_endpoint_uuid_here:ZDdmZGEyMTJlMGExZDMwOTEzMWU4NzQ1MjMwMzcwMzE="
 ```
 
 Example response:

@@ -1,7 +1,12 @@
 import json
 from flask import Flask, request, Response
 
+from tokens import Tokens
 
+# Keep track of all tokens
+tokens = Tokens()
+
+# The flask app
 app = Flask(__name__)
 
 
@@ -25,14 +30,19 @@ def index():
 @app.route("/register", methods=["POST"])
 def register():
     username = request.form.get('username')
+
     if not username:
         return api_error("You must provide a username")
 
-    return api_success({})
+    if tokens.exists(username):
+        return api_error("That username is already registered")
+
+    token = tokens.generate(username)
+    return api_success( {"auth_token": token })
 
 
 @app.route("/submit", methods=["POST"])
-def register():
+def submit():
     return api_error("Not implemented yet")
 
 
