@@ -53,7 +53,7 @@ Example response:
 
 #### Send logs to the gateway
 
-Example request:
+Example request (note that the authorization header is base64-encoded `insert_endpoint_uuid_here:3b0be5105ad4fd89efc3f2420f6074f3`):
 
 ```
 $ curl -v \
