@@ -1,13 +1,63 @@
+import os
 import json
+import secrets
+from functools import wraps
 from flask import Flask, request, Response
 
-from tokens import Tokens
 
-# Keep track of all tokens
+class Tokens(object):
+    def __init__(self):
+        self.path = '/data/tokens.json'
+        self.load()
+
+    def load(self):
+        if not os.path.exists(self.path):
+            self.tokens = {}
+            self.save()
+        else:
+            with open(self.path) as f:
+                self.tokens = json.load(f)
+
+    def save(self):
+        with open(self.path, 'w') as f:
+            json.dump(self.tokens, f)
+
+    def get(self, username):
+        if self.exists(username):
+            return self.tokens[username]
+        else:
+            return None
+
+    def exists(self, username):
+        return username in self.tokens
+
+    def generate(self, username):
+        token = secrets.token_hex(16)
+        self.tokens[username] = token
+        self.save()
+        return token
+
+
 tokens = Tokens()
-
-# The flask app
 app = Flask(__name__)
+
+
+def check_auth(username, password):
+    return tokens.exists(username) and password == tokens.get(username)
+
+
+def authenticate():
+    return Response(status=401, mimetype="application/json")
+
+
+def requires_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = request.authorization
+        if not auth or not check_auth(auth.username, auth.password):
+            return authenticate()
+        return f(*args, **kwargs)
+    return decorated
 
 
 def api_error(error_msg):
@@ -42,6 +92,7 @@ def register():
 
 
 @app.route("/submit", methods=["POST"])
+@requires_auth
 def submit():
     return api_error("Not implemented yet")
 
