@@ -1,10 +1,18 @@
 import os
 import json
 from functools import wraps
+
 from flask import Flask, request, Response
-from elasticsearch import Elasticsearch
+from elasticsearch.exceptions import ConnectionError
+from elasticsearch_dsl import connections, Index, Search
 
 from .tokens import Tokens
+from .user import User
+
+
+# Configure ElasticSearch default connection
+elasticsearch_host = 'elasticsearch:9200'
+connections.create_connection(hosts=[elasticsearch_host], timeout=20)
 
 
 def create_app(test_config=None):
@@ -18,8 +26,6 @@ def create_app(test_config=None):
     # Load tokens
     tokens = Tokens(app.config['TOKENS_PATH'])
 
-    # Connect to ElasticSearch
-    es = Elasticsearch(['elasticsearch:9200'])
 
     def check_auth(username, password):
         return tokens.exists(username) and password == tokens.get(username)
@@ -55,7 +61,7 @@ def create_app(test_config=None):
 
     @app.route("/")
     def index():
-        return "<html><head><title>Flock gateway</title></head><body><p style='font-size: 20em; text-align: center;'>🦉</p></body></html>"
+        return "<html><head><title>Flock gateway</title></head><body><p style='font-size: 20em; text-align: center;'>flock</p></body></html>"
 
 
     @app.route("/register", methods=["POST"])
@@ -70,6 +76,9 @@ def create_app(test_config=None):
         for c in username:
             if c not in valid_chars:
                 return api_error("Usernames must only contain letters, numbers, '-', or '_'")
+
+        #r = Search(index="user").query("match", username=username).execute()
+        #print(r)
 
         if tokens.exists(username):
             return api_error("That username is already registered")

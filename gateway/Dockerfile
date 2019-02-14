@@ -13,4 +13,4 @@ EXPOSE 5000
 
 ENV FLASK_APP gateway
 
-CMD ["pipenv", "run", "flask", "run", "--host=0.0.0.0"]
+CMD ["pipenv", "run", "python", "-u", "app.py"]
