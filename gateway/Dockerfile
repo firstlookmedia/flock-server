@@ -7,7 +7,7 @@ COPY . /app
 
 # Install python dependencies
 RUN pip install pipenv
-RUN pipenv install
+RUN pipenv install --dev
 
 EXPOSE 5000
 
