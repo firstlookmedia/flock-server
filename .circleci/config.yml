@@ -19,9 +19,8 @@ jobs:
       - run:
           name: Start elasticsearch container, and update /etc/hosts
           command: |
-            set -x
             sudo sh -c 'echo "127.0.0.1 elasticsearch" >> /etc/hosts'
-            docker run -p 9200:9200 -d elasticsearch:6.5.4
+            docker run -p 9200:9200 -d elasticsearch:6.6.0
 
       - run:
           name: Install gateway dependencies

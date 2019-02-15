@@ -9,7 +9,7 @@ services:
       - ./gateway:/app
 
   elasticsearch:
-    image: "elasticsearch:6.5.4@sha256:7053b3979a1dd709f2a225d52bc53622714790b13d88cf08164d252291ab8b61"
+    image: "elasticsearch:6.6.0@sha256:ed1f27b9a16dc29d19fc607a1e6e281d1ddf83d81734427d895f5b91c23a6ee5"
     environment:
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
