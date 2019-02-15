@@ -10,7 +10,10 @@ from elasticsearch_dsl import connections, Date, Document, Index, Search, Text
 
 
 # Configure ElasticSearch default connection
-elasticsearch_host = 'elasticsearch:9200'
+if 'ELASTICSEARCH_HOST' in os.environ:
+    elasticsearch_host = '{}:9200'.format(os.environ['ELASTICSEARCH_HOST'])
+else:
+    elasticsearch_host = 'elasticsearch:9200'
 connections.create_connection(hosts=[elasticsearch_host], timeout=20)
 
 
