@@ -30,18 +30,8 @@ The gateway web interface will be at http://127.0.0.1:5000, and Kibana will be h
 
 ## To run tests
 
-Start the test containers (which use different data volumes), and then run the gateway tests:
-
 ```
-$ cd tests
-$ docker-compose start
-$ docker exec -it tests_gateway_1 pipenv run python -m pytest
-```
-
-When you're done, stop the test containers:
-
-```
-$ docker-compose stop
+$ ./run_tests.sh
 ```
 
 ## Developer notes
