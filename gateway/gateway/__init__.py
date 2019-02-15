@@ -125,8 +125,12 @@ def create_app(test_config=None):
         if ('host_uuid' not in doc) or (request.authorization['username'] != doc['host_uuid']):
             return api_error("Data does not contain the corrent host_uuid")
 
+        # Convert 'unixTime' to '@timestamp'
+        if 'unixTime' in doc:
+            doc['@timestamp'] = datetime.utcfromtimestamp(int(doc['unixtime'])).strftime('%Y-%m-%dT%H:%M:%S.000Z')
+
         # Push data into ElasticSearch
-        es.index(index='osquery', doc_type='osquery', body=doc)
+        es.index(index='osquery', doc_type='doc', body=doc)
 
         return api_success()
 
