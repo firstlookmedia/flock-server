@@ -1,6 +1,7 @@
 import os
 import pytest
 
+from elasticsearch_dsl import Index, Search
 from gateway import create_app
 
 
@@ -17,4 +18,10 @@ def app():
 @pytest.fixture
 def client(app):
     """A test client for the app."""
-    return app.test_client()
+    app = app.test_client()
+
+    # Delete all users
+    Search(index='user').query('match_all').delete()
+    Index('user').refresh()
+
+    return app

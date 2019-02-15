@@ -1,8 +1,6 @@
 import time
 import requests
 
-from elasticsearch_dsl import Index
-
 from gateway import User, create_app, elasticsearch_host
 
 

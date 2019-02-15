@@ -1,12 +1,13 @@
 version: '3'
 services:
+
   gateway:
     build: gateway
     ports:
       - "127.0.0.1:5000:5000"
     volumes:
-      - ./data/gateway:/data
       - ./gateway:/app
+
   elasticsearch:
     image: "elasticsearch:6.5.4@sha256:7053b3979a1dd709f2a225d52bc53622714790b13d88cf08164d252291ab8b61"
     environment:
@@ -20,6 +21,7 @@ services:
       - "9200:9200"
     volumes:
       - ./data/elasticsearch:/usr/share/elasticsearch/data
+
   kibana:
     image: "kibana:6.5.4@sha256:106ff4a8c691936d4de7e2aba289939624ec75b26746d5660201f47c0afe2d73"
     environment:

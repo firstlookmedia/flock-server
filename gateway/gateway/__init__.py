@@ -93,12 +93,15 @@ def create_app(test_config=None):
             if c not in valid_chars:
                 return api_error("Usernames must only contain letters, numbers, '-', or '_'")
 
+        # Is the user already registered?
         r = Search(index="user").query("match", username=username).execute()
         if len(r) != 0:
             return api_error("That username is already registered")
 
+        # Add user, and force a refresh of the index
         user = User(username=username, token=secrets.token_hex(16))
         user.save()
+        Index('user').refresh()
 
         return api_success( {"auth_token": user.token })
 
