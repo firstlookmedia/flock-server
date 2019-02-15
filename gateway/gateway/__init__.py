@@ -5,6 +5,7 @@ from datetime import datetime
 from functools import wraps
 
 from flask import Flask, request, Response
+from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError
 from elasticsearch_dsl import connections, Date, Document, Index, Search, Text
 
@@ -16,6 +17,8 @@ else:
     elasticsearch_host = 'elasticsearch:9200'
 connections.create_connection(hosts=[elasticsearch_host], timeout=20)
 
+# Low-level elasticsearch client
+es = Elasticsearch([elasticsearch_host], timeout=20)
 
 class User(Document):
     username = Text()
@@ -114,15 +117,16 @@ def create_app(test_config=None):
     def submit():
         # Validate that the data is JSON
         try:
-            obj = json.loads(request.data)
+            doc = json.loads(request.data)
         except:
             return api_error("Invalid JSON object")
 
         # Validate that host_uuid is the username
-        if ('host_uuid' not in obj) or (request.authorization['username'] != obj['host_uuid']):
+        if ('host_uuid' not in doc) or (request.authorization['username'] != doc['host_uuid']):
             return api_error("Data does not contain the corrent host_uuid")
 
-        # TODO: push data into ElasticSearch
+        # Push data into ElasticSearch
+        es.index(index='osquery', doc_type='osquery', body=doc)
 
         return api_success()
 
