@@ -17,24 +17,20 @@ jobs:
       - setup_remote_docker
 
       - run:
-          name: Start elasticsearch container, and update /etc/hosts
-          command: |
-            sudo sh -c 'echo "127.0.0.1 elasticsearch" >> /etc/hosts'
-            docker run -p 9200:9200 -d elasticsearch:6.6.0
+          name: Build containers
+          command: docker build -t gateway gateway
 
       - run:
-          name: Install gateway dependencies
+          name: Start containers
           command: |
-            cd gateway
-            pip install pipenv
-            pipenv install --dev
+            docker network create testnet
+            docker run -d --net testnet --name elasticsearch -e xpack.security.enabled=false -e transport.host=localhost elasticsearch:6.6.0
+            docker run -d --net testnet --name gateway gateway
 
       - run:
-          name: Wait for elasticsearch to be available
-          command: until curl http://elasticsearch:9200; do echo Waiting for ElasticSearch; sleep 5; done
+         name: Wait for elasticsearch to be available
+         command: docker exec -it gateway ./wait_for_es.sh
 
       - run:
           name: Run unit tests
-          command: |
-            cd gateway
-            pipenv run python -m pytest
+          command: docker exec -it gateway pipenv run python -m pytest
