@@ -31,8 +31,8 @@ jobs:
             pipenv install --dev
 
       - run:
-        name: Wait for elasticsearch to be available
-        command: until curl http://elasticsearch:9200; do echo Waiting for ElasticSearch; sleep 5; done
+          name: Wait for elasticsearch to be available
+          command: until curl http://elasticsearch:9200; do echo Waiting for ElasticSearch; sleep 5; done
 
       - run:
           name: Run unit tests
