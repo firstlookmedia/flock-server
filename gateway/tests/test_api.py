@@ -30,6 +30,27 @@ def test_register_cannot_register_existing_username(client):
     assert res.status_code == 400
 
 
+def test_ping_invalid_auth(client):
+    res = client.get('/ping')
+    assert res.status_code == 401
+
+
+def test_ping_valid_auth(client):
+    username = "UUID1"
+
+    res = client.post('/register', data={'username': username})
+    assert res.status_code == 200
+
+    auth_token = json.loads(res.data)['auth_token']
+
+    # Create authorization header
+    encoded_credentials = base64.b64encode('{}:{}'.format(username, auth_token).encode()).decode()
+
+    res = client.get('/ping',
+        headers={'Authorization': 'Basic {}'.format(encoded_credentials)})
+    assert res.status_code == 200
+
+
 def test_submit_invalid_auth(client):
     res = client.post('/submit', data='{}')
     assert res.status_code == 401

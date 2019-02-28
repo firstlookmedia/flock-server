@@ -112,6 +112,13 @@ def create_app(test_config=None):
         return api_success( {"auth_token": user.token })
 
 
+    @app.route("/ping")
+    @requires_auth
+    def info():
+        # Ping the server, to make sure settings are configured correctly
+        return api_success()
+
+
     @app.route("/submit", methods=["POST"])
     @requires_auth
     def submit():
@@ -130,7 +137,7 @@ def create_app(test_config=None):
             doc['@timestamp'] = datetime.utcfromtimestamp(int(doc['unixtime'])).strftime('%Y-%m-%dT%H:%M:%S.000Z')
 
         # Push data into ElasticSearch
-        es.index(index='osquery', doc_type='doc', body=doc)
+        es.index(index='osquery', doc_type='osquery', body=doc)
 
         return api_success()
 
