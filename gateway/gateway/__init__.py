@@ -102,7 +102,7 @@ def create_app(test_config=None):
         # Is the user already registered?
         r = Search(index="user").query("match", username=username).execute()
         if len(r) != 0:
-            return api_error("That username is already registered")
+            return api_error("This computer is already registered, please talk to an administrator")
 
         # Add user, and force a refresh of the index
         user = User(username=username, token=secrets.token_hex(16))
