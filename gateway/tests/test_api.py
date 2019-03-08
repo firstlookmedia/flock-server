@@ -68,11 +68,11 @@ def test_submit_valid_auth(client):
     encoded_credentials = base64.b64encode('{}:{}'.format(username, auth_token).encode()).decode()
 
     res = client.post('/submit',
-        data=json.dumps({'host_uuid': username}),
+        data=json.dumps({'hostIdentifier': username}),
         headers={'Authorization': 'Basic {}'.format(encoded_credentials)})
     assert res.status_code == 200
 
-def test_submit_valid_auth_with_invalid_host_uuid(client):
+def test_submit_valid_auth_with_invalid_host_identifier(client):
     username = "UUID42"
     res = client.post('/register', data={'username': username})
     auth_token = json.loads(res.data)['auth_token']
@@ -84,6 +84,6 @@ def test_submit_valid_auth_with_invalid_host_uuid(client):
     assert res.status_code == 400
 
     res = client.post('/submit',
-        data=json.dumps({'host_uuid': 'something_wrong'}),
+        data=json.dumps({'hostIdentifier': 'something_wrong'}),
         headers={'Authorization': 'Basic {}'.format(encoded_credentials)})
     assert res.status_code == 400
