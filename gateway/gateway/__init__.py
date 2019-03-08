@@ -128,9 +128,9 @@ def create_app(test_config=None):
         except:
             return api_error("Invalid JSON object")
 
-        # Validate that host_uuid is the username
-        if ('host_uuid' not in doc) or (request.authorization['username'] != doc['host_uuid']):
-            return api_error("Data does not contain the corrent host_uuid")
+        # Validate that hostIdentifier is the username
+        if ('hostIdentifier' not in doc) or (request.authorization['username'] != doc['hostIdentifier']):
+            return api_error("Data does not contain the correct hostIdentifier")
 
         # Convert 'unixTime' to '@timestamp'
         if 'unixTime' in doc:
