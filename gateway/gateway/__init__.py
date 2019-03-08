@@ -134,7 +134,7 @@ def create_app(test_config=None):
 
         # Convert 'unixTime' to '@timestamp'
         if 'unixTime' in doc:
-            doc['@timestamp'] = datetime.utcfromtimestamp(int(doc['unixtime'])).strftime('%Y-%m-%dT%H:%M:%S.000Z')
+            doc['@timestamp'] = datetime.utcfromtimestamp(int(doc['unixTime'])).strftime('%Y-%m-%dT%H:%M:%S.000Z')
 
         # Push data into ElasticSearch
         es.index(index='osquery', doc_type='osquery', body=doc)
