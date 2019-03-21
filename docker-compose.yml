@@ -8,6 +8,11 @@ services:
     volumes:
       - ./gateway:/app
 
+  keybase:
+    build: keybase
+    volumes:
+      - ./keybase:/app
+
   elasticsearch:
     image: "elasticsearch:6.6.0@sha256:ed1f27b9a16dc29d19fc607a1e6e281d1ddf83d81734427d895f5b91c23a6ee5"
     environment:
