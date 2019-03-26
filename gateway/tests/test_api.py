@@ -52,7 +52,7 @@ def test_ping_valid_auth(client):
 
 
 def test_submit_invalid_auth(client):
-    res = client.post('/submit', data='{}')
+    res = client.post('/submit', data='[{}]')
     assert res.status_code == 401
 
 
@@ -68,7 +68,7 @@ def test_submit_valid_auth(client):
     encoded_credentials = base64.b64encode('{}:{}'.format(username, auth_token).encode()).decode()
 
     res = client.post('/submit',
-        data=json.dumps({'hostIdentifier': username}),
+        data=json.dumps([{'hostIdentifier': username}]),
         headers={'Authorization': 'Basic {}'.format(encoded_credentials)})
     assert res.status_code == 200
 
@@ -79,11 +79,52 @@ def test_submit_valid_auth_with_invalid_host_identifier(client):
     encoded_credentials = base64.b64encode('{}:{}'.format(username, auth_token).encode()).decode()
 
     res = client.post('/submit',
-        data=json.dumps({}),
+        data=json.dumps([{}]),
         headers={'Authorization': 'Basic {}'.format(encoded_credentials)})
     assert res.status_code == 400
 
     res = client.post('/submit',
-        data=json.dumps({'hostIdentifier': 'something_wrong'}),
+        data=json.dumps([{'hostIdentifier': 'something_wrong'}]),
         headers={'Authorization': 'Basic {}'.format(encoded_credentials)})
     assert res.status_code == 400
+
+def test_submit_list(client):
+    username = "UUID4444"
+
+    res = client.post('/register', data={'username': username})
+    assert res.status_code == 200
+
+    auth_token = json.loads(res.data)['auth_token']
+    encoded_credentials = base64.b64encode('{}:{}'.format(username, auth_token).encode()).decode()
+
+    def submit(data):
+        res = client.post('/submit',
+            data=json.dumps(data),
+            headers={'Authorization': 'Basic {}'.format(encoded_credentials)})
+        return res
+
+    # Submit a log object, not a list of log objects
+    res = submit({'hostIdentifier': username})
+    assert res.status_code == 400
+
+    # Submit 1 log object
+    res = submit([{'hostIdentifier': username}])
+    assert res.status_code == 200
+    assert json.loads(res.data)['processed_count'] == 1
+
+    # Submit 3 log objects, one of them invalid
+    res = submit([
+        {'hostIdentifier': username},
+        {'hostIdentifier': 'invalid_username'},
+        {'hostIdentifier': username}
+    ])
+    assert res.status_code == 400
+
+    # Submit 3 log objects
+    res = submit([
+        {'hostIdentifier': username},
+        {'hostIdentifier': username},
+        {'hostIdentifier': username}
+    ])
+    assert res.status_code == 200
+    assert json.loads(res.data)['processed_count'] == 3

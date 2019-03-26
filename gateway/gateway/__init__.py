@@ -124,22 +124,33 @@ def create_app(test_config=None):
     def submit():
         # Validate that the data is JSON
         try:
-            doc = json.loads(request.data)
+            docs = json.loads(request.data)
         except:
             return api_error("Invalid JSON object")
 
-        # Validate that hostIdentifier is the username
-        if ('hostIdentifier' not in doc) or (request.authorization['username'] != doc['hostIdentifier']):
-            return api_error("Data does not contain the correct hostIdentifier")
+        if type(docs) != list:
+            return api_error("Data is not an array")
 
-        # Convert 'unixTime' to '@timestamp'
-        if 'unixTime' in doc:
-            doc['@timestamp'] = datetime.utcfromtimestamp(int(doc['unixTime'])).strftime('%Y-%m-%dT%H:%M:%S.000Z')
+        # Validate
+        for i, doc in enumerate(docs):
+            # Item should be an object
+            if type(doc) != dict:
+                return api_error("Item {} is not an object".format(i))
 
-        # Push data into ElasticSearch
-        index = 'flock-{}'.format(datetime.now().strftime('%Y-%m-%d'))
-        es.index(index=index, doc_type='osquery', body=doc)
+            # hostIdentifier should be the username
+            if ('hostIdentifier' not in doc) or (request.authorization['username'] != doc['hostIdentifier']):
+                return api_error("Item {} does not contain the correct hostIdentifier".format(i))
 
-        return api_success()
+        # Add data to ElasticSearch
+        for doc in docs:
+            # Convert 'unixTime' to '@timestamp'
+            if 'unixTime' in doc:
+                doc['@timestamp'] = datetime.utcfromtimestamp(int(doc['unixTime'])).strftime('%Y-%m-%dT%H:%M:%S.000Z')
+
+            # Add data
+            index = 'flock-{}'.format(datetime.now().strftime('%Y-%m-%d'))
+            es.index(index=index, doc_type='osquery', body=doc)
+
+        return api_success({'processed_count': len(docs)})
 
     return app
