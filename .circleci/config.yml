@@ -25,7 +25,7 @@ jobs:
           command: |
             docker network create testnet
             docker run -d --net testnet --name test-elasticsearch -e xpack.security.enabled=false -e transport.host=localhost elasticsearch:6.6.0@sha256:ed1f27b9a16dc29d19fc607a1e6e281d1ddf83d81734427d895f5b91c23a6ee5
-            docker run -d --net testnet --name test-gateway -e ELASTICSEARCH_HOST=test-elasticsearch gateway
+            docker run -d --net testnet --name test-gateway -e ELASTICSEARCH_HOSTS=http://test-elasticsearch:9200 gateway
 
       - run:
          name: Wait for elasticsearch to be available

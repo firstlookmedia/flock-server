@@ -1,13 +1,12 @@
 import time
 import requests
 
-from gateway import User, create_app, elasticsearch_host
+from gateway import User, create_app, elasticsearch_url
 
 
 if __name__ == '__main__':
     # Wait for ElasticSearch to start
     print('Waiting for ElasticSearch')
-    elasticsearch_url = 'http://{}/'.format(elasticsearch_host)
     while True:
         try:
             r = requests.get(elasticsearch_url)

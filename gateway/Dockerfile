@@ -12,6 +12,5 @@ RUN pipenv install --dev
 EXPOSE 5000
 
 ENV FLASK_APP gateway
-ENV ELASTICSEARCH_HOST elasticsearch
 
 CMD ["pipenv", "run", "python", "-u", "app.py"]

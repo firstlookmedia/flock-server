@@ -11,14 +11,14 @@ from elasticsearch_dsl import connections, Date, Document, Index, Search, Text
 
 
 # Configure ElasticSearch default connection
-if 'ELASTICSEARCH_HOST' in os.environ:
-    elasticsearch_host = '{}:9200'.format(os.environ['ELASTICSEARCH_HOST'])
+if 'ELASTICSEARCH_HOSTS' in os.environ:
+    elasticsearch_url = os.environ['ELASTICSEARCH_HOSTS']
 else:
-    elasticsearch_host = 'elasticsearch:9200'
-connections.create_connection(hosts=[elasticsearch_host], timeout=20)
+    elasticsearch_url = 'http://elasticsearch:9200'
+connections.create_connection(hosts=[elasticsearch_url], timeout=20)
 
 # Low-level elasticsearch client
-es = Elasticsearch([elasticsearch_host], timeout=20)
+es = Elasticsearch([elasticsearch_url], timeout=20)
 
 class User(Document):
     username = Text()
