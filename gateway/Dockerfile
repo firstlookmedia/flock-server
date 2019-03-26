@@ -1,5 +1,5 @@
-# python:3.7.2-stretch (on 2019-01-30)
-FROM python@sha256:8bfb2d646119faeb1892ddf9668eeb08a8938626f64b91100a31a8dea46ec67d
+# python:3.7.2-stretch (on 2019-03-26)
+FROM python@sha256:6ff53856b07aa04bce29829338aab09da2f7d240de4046c7d3d1cd239a4fba5a
 
 # Copy code
 WORKDIR /app
