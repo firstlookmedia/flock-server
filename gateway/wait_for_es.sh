@@ -1,5 +1,5 @@
 #!/bin/bash
-until curl http://${ELASTICSEARCH_HOST}:9200
+until curl ${ELASTICSEARCH_HOSTS}
 do
   echo Waiting for elasticsearch
   sleep 5
