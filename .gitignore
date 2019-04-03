@@ -1,5 +1,5 @@
-data/gateway
 data/elasticsearch
+data/certs/certs
 
 tests/data/gateway
 tests/data/elasticsearch

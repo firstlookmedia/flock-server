@@ -4,11 +4,14 @@ services:
   gateway:
     build: gateway
     environment:
-      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+      - ELASTICSEARCH_HOSTS=https://elasticsearch:9200
+      # TODO: this password is only hard-coded during early development
+      - "ELASTIC_PASSWORD=savor_prank_glass_sneer_prude"
     ports:
       - "127.0.0.1:5000:5000"
     volumes:
       - ./gateway:/app
+      - ./data/certs/certs/ca/ca.crt:/usr/share/ca-certificates/ca.crt
 
   elasticsearch:
     # elasticsearch:6.6.2 (on 2019-03-26)
@@ -16,6 +19,15 @@ services:
     environment:
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      # TODO: this password is only hard-coded during early development
+      - "ELASTIC_PASSWORD=savor_prank_glass_sneer_prude"
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.ssl.certificate_authorities=/usr/share/elasticsearch/config/certificates/ca/ca.crt
+      - xpack.ssl.certificate=/usr/share/elasticsearch/config/certificates/elasticsearch/elasticsearch.crt
+      - xpack.ssl.key=/usr/share/elasticsearch/config/certificates/elasticsearch/elasticsearch.key
     ulimits:
       memlock:
         soft: -1
@@ -24,13 +36,17 @@ services:
       - "9200:9200"
     volumes:
       - ./data/elasticsearch:/usr/share/elasticsearch/data
+      - ./data/certs/certs/ca/ca.crt:/usr/share/elasticsearch/config/certificates/ca/ca.crt
+      - ./data/certs/certs/elasticsearch:/usr/share/elasticsearch/config/certificates/elasticsearch
 
   kibana:
     # kibana:6.6.2 (on 2019-03-26)
     image: "kibana:6.6.2@sha256:80e6f3b9ad20ce9d7a48c6c72828bc5b00369d77fa8208ed4bae1b9c8dc6e1ef"
     environment:
-      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+      ELASTICSEARCH_HOSTS: https://elasticsearch:9200
     ports:
       - "5601:5601"
     volumes:
       - ./kibana.yml:/usr/share/kibana/config/kibana.yml
+      - ./data/certs/certs/ca/ca.crt:/usr/share/kibana/config/certificates/ca/ca.crt
+      - ./data/certs/certs/kibana:/usr/share/kibana/config/certificates/kibana
