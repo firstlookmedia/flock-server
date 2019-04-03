@@ -20,18 +20,26 @@ The Flock server includes several components, running in containers, which will 
 
 ## Getting started
 
-You need **Docker** and **Docker Compose**. To start all the containers:
+You need **Docker** and **Docker Compose**.
+
+First you must generate the certificates. (This command generates keys and certificates in `certificates/certs`. If you want to regenerate them, delete that folder and run the command again.)
 
 ```sh
-$ docker-compose up
+docker-compose -f create-certs.yml up
 ```
 
-The gateway web interface will be at http://127.0.0.1:5000, and Kibana will be http://127.0.0.1:5601.
+Then start all containers.
+
+```sh
+docker-compose up
+```
+
+The gateway web interface will be at http://127.0.0.1:5000, and Kibana will be https://127.0.0.1:5601 (with a self-signed cert).
 
 ## To run tests
 
 ```
-$ ./run_tests.sh
+./run_tests.sh
 ```
 
 ## Developer notes
@@ -43,7 +51,7 @@ $ ./run_tests.sh
 Example request:
 
 ```
-$ curl -v \
+curl -v \
        --data "username=insert_endpoint_uuid_here" \
        http://127.0.0.1:5000/register
 ```
@@ -62,7 +70,7 @@ Example response:
 Example request (note that the authorization header is base64-encoded `insert_endpoint_uuid_here:3b0be5105ad4fd89efc3f2420f6074f3`):
 
 ```
-$ curl -v \
+curl -v \
        -H "Authorization: Basic aW5zZXJ0X2VuZHBvaW50X3V1aWRfaGVyZTozYjBiZTUxMDVhZDRmZDg5ZWZjM2YyNDIwZjYwNzRmMw==" \
        -H "Content-Type: application/json" \
        --data '{"host_uuid": "insert_endpoint_uuid_here", "other_arbitrary_data": "goes here"}' \

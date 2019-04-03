@@ -9,7 +9,7 @@ if __name__ == '__main__':
     print('Waiting for ElasticSearch')
     while True:
         try:
-            r = requests.get(elasticsearch_url)
+            r = requests.get(elasticsearch_url, verify='/usr/share/ca-certificates/ca.crt')
             print('{} is ready'.format(elasticsearch_url))
             break
 

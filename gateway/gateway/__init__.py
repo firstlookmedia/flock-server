@@ -11,14 +11,23 @@ from elasticsearch_dsl import connections, Date, Document, Index, Search, Text
 
 
 # Configure ElasticSearch default connection
+ca_cert_path = '/usr/share/ca-certificates/ca.crt'
 if 'ELASTICSEARCH_HOSTS' in os.environ:
     elasticsearch_url = os.environ['ELASTICSEARCH_HOSTS']
 else:
-    elasticsearch_url = 'http://elasticsearch:9200'
-connections.create_connection(hosts=[elasticsearch_url], timeout=20)
+    elasticsearch_url = 'https://elasticsearch:9200'
+connections.create_connection(
+    hosts=[elasticsearch_url],
+    use_ssl=True, verify_certs=True, ca_certs=ca_cert_path,
+    timeout=20
+)
 
 # Low-level elasticsearch client
-es = Elasticsearch([elasticsearch_url], timeout=20)
+es = Elasticsearch(
+    [elasticsearch_url],
+    use_ssl=True, verify_certs=True, ca_certs=ca_cert_path,
+    timeout=20
+)
 
 class User(Document):
     username = Text()
