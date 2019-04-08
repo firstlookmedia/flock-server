@@ -6,11 +6,14 @@ Flock is a privacy-preserving fleet management system powered by osquery and the
 
 The goal of Flock is to gain visibility into a fleet of laptops while protecting the privacy of the laptop users. It achieves this by only collecting information needed to inform security decisions, and by not allow the IT team to access arbitrary files, or execute arbitrary code, on the laptops they are monitoring.
 
-See also the [Flock Agent](https://github.com/firstlookmedia/flock-agent).
+See also:
+
+- [Flock Agent](https://github.com/firstlookmedia/flock-agent), the macOS agent that runs on endpoints, collects data, and shares it with the gateway.
+- [Flock Gateway](https://github.com/firstlookmedia/flock-gateway), the API that agents submit logs to, and stashes them in ElasticSearch.
 
 ## About the Flock server
 
-The Flock server includes several components, running in containers, which will make them easy to deploy in cloud hosting services or on physical hardware. They include:
+The Flock server includes several components that run in different containers. These include:
 
 **elasticsearch:** This container holds osquery data for the entire fleet.
 
@@ -22,7 +25,9 @@ The Flock server includes several components, running in containers, which will 
 
 You need **Docker** and **Docker Compose**.
 
-First you must generate the certificates. (This command generates keys and certificates in `certificates/certs`. If you want to regenerate them, delete that folder and run the command again.)
+Docker Compose expects `../flock-gateway` to exist. Make sure to clone the [Flock Gateway](https://github.com/firstlookmedia/flock-gateway) git repository into the parent directory before proceeding.
+
+First you must generate the certificates. (This command generates keys and certificates in `data/certs/certs`. If you want to regenerate them, delete that folder and run the command again.)
 
 ```sh
 docker-compose -f create-certs.yml up

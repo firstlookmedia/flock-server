@@ -2,7 +2,7 @@ version: '3'
 services:
 
   gateway:
-    build: gateway
+    build: ../flock-gateway
     environment:
       - ELASTICSEARCH_HOSTS=https://elasticsearch:9200
       # TODO: this password is only hard-coded during early development
