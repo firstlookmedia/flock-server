@@ -25,7 +25,7 @@ The Flock server includes several components that run in different containers. T
 
 You need **Docker** and **Docker Compose**.
 
-Docker Compose expects `../flock-gateway` to exist. Make sure to clone the [Flock Gateway](https://github.com/firstlookmedia/flock-gateway) git repository into the parent directory before proceeding.
+Docker Compose expects `../flock-gateway` to exist. Make sure to clone the [Flock Gateway](https://github.com/firstlookmedia/flock-gateway) git repo into the parent directory before proceeding.
 
 First you must generate the certificates. (This command generates keys and certificates in `data/certs/certs`. If you want to regenerate them, delete that folder and run the command again.)
 
@@ -40,61 +40,3 @@ docker-compose up
 ```
 
 The gateway web interface will be at http://127.0.0.1:5000, and Kibana will be https://127.0.0.1:5601 (with a self-signed cert).
-
-## To run tests
-
-```
-./run_tests.sh
-```
-
-## Developer notes
-
-### Gateway API
-
-#### Register to receive an authentication token
-
-Example request:
-
-```
-curl -v \
-       --data "username=insert_endpoint_uuid_here" \
-       http://127.0.0.1:5000/register
-```
-
-Example response:
-
-```
-{
-  "auth_token": "3b0be5105ad4fd89efc3f2420f6074f3",
-  "error": false
-}
-```
-
-#### Send logs to the gateway
-
-Example request (note that the authorization header is base64-encoded `insert_endpoint_uuid_here:3b0be5105ad4fd89efc3f2420f6074f3`):
-
-```
-curl -v \
-       -H "Authorization: Basic aW5zZXJ0X2VuZHBvaW50X3V1aWRfaGVyZTozYjBiZTUxMDVhZDRmZDg5ZWZjM2YyNDIwZjYwNzRmMw==" \
-       -H "Content-Type: application/json" \
-       --data '{"host_uuid": "insert_endpoint_uuid_here", "other_arbitrary_data": "goes here"}' \
-       http://127.0.0.1:5000/submit
-```
-
-Example response:
-
-```
-{
-  "error": false
-}
-```
-
-### Modifying gateway pip dependencies
-
-To edit pip dependencies in the gateway container, start a new container and then run `pipenv` commands, like `pipenv install requests`. You can start the container with pipenv like:
-
-```
-cd gateway
-./pipenv_shell.sh
-```
