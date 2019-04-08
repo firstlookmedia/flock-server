@@ -2,8 +2,8 @@ import json
 import base64
 
 
-def test_index(client):
-     assert client.get('/').status_code == 200
+def test_index_is_404(client):
+     assert client.get('/').status_code == 404
 
 
 def test_register_without_username(client):

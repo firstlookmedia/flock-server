@@ -87,10 +87,6 @@ def create_app(test_config=None):
         return Response(json.dumps(success_obj), status=200, mimetype="application/json")
 
 
-    @app.route("/")
-    def index():
-        return "<html><head><title>Flock gateway</title></head><body><p style='font-size: 20em; text-align: center;'>flock</p></body></html>"
-
     @app.route("/es-test")
     def es_test():
         r = Search(index="user").query("match", username="user1").execute()
