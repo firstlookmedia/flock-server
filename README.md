@@ -6,26 +6,21 @@ Flock is a privacy-preserving fleet management system powered by osquery and the
 
 The goal of Flock is to gain visibility into a fleet of laptops while protecting the privacy of the laptop users. It achieves this by only collecting information needed to inform security decisions, and by not allow the IT team to access arbitrary files, or execute arbitrary code, on the laptops they are monitoring.
 
-See also:
-
-- [Flock Agent](https://github.com/firstlookmedia/flock-agent), the macOS agent that runs on endpoints, collects data, and shares it with the gateway.
-- [Flock Gateway](https://github.com/firstlookmedia/flock-gateway), the API that agents submit logs to, and stashes them in ElasticSearch.
+See also [Flock Agent](https://github.com/firstlookmedia/flock-agent), the macOS agent that runs on endpoints, collects data, and shares it with the server.
 
 ## About the Flock server
 
-The Flock server includes several components that run in different containers. These include:
+The purpose of Flock server is to accept data from all of the agents and save it in an Elasticsearch database. Agents register themselves with the server and get assigned an authentication token, then they use these credentials to submit logs from osquery, which get saved to the database. Agents have write-only access; they cannot read anything from the database.
 
-**elasticsearch:** This container holds osquery data for the entire fleet.
+How you configure Elasticsearch and Kibana (for data visualizations) are outside the scope of this project. However we do provide a pre-built Kibana dashboard [coming soon](https://github.com/firstlookmedia/flock/issues/1)) for visualizations we find useful.
 
-**kibana:** This container runs Kibana, which visualizes the data from ElasticSearch, with custom dashboards showing whatever information we feel is most useful. For example, we can make pie charts of OS patch levels, and see which users have obscure or sketchy Chrome extensions, and which users have insecure configurations, like aren’t using FileVault or have their firewall disabled.
+The server also includes a [Keybase](https://keybase.io/) bot ([coming soon](https://github.com/firstlookmedia/flock/issues/2)) to send encrypted notifications to the security team. Security staff also send messages to the bot in order to administer the server.
 
-**gateway:** This container hosts a web service used as a gateway between endpoints and ElasticSearch. Endpoints can _register_ themselves and get assigned an authentication token, and they can _submit_ logs, authenticating using that token. It's write-only; they can't read anything from ElasticSearch.
+## Developer notes
 
-## Getting started
+### Running a local server
 
-You need **Docker** and **Docker Compose**.
-
-Docker Compose expects `../flock-gateway` to exist. Make sure to clone the [Flock Gateway](https://github.com/firstlookmedia/flock-gateway) git repo into the parent directory before proceeding.
+To run a local server, you need Docker Compose.
 
 First you must generate the certificates. (This command generates keys and certificates in `data/certs/certs`. If you want to regenerate them, delete that folder and run the command again.)
 
@@ -39,4 +34,63 @@ Then start all containers.
 docker-compose up
 ```
 
-The gateway web interface will be at http://127.0.0.1:5000, and Kibana will be https://127.0.0.1:5601 (with a self-signed cert).
+The server web interface will be at http://127.0.0.1:5000, and Kibana will be https://127.0.0.1:5601 (with a self-signed cert).
+
+### Running tests
+
+Here's how to run server tests:
+
+```
+cd src
+./run_tests.sh
+```
+
+### Modifying pip dependencies
+
+To edit pip dependencies in the gateway container, start a new container and then run `pipenv` commands, like `pipenv install requests`. You can start the container with pipenv like:
+
+```
+cd src
+./pipenv_shell.sh
+```
+
+### Server API
+
+#### Register to receive an authentication token
+
+Example request:
+
+```
+curl -v \
+       --data "username=insert_endpoint_uuid_here" \
+       http://127.0.0.1:5000/register
+```
+
+Example response:
+
+```
+{
+  "auth_token": "3b0be5105ad4fd89efc3f2420f6074f3",
+  "error": false
+}
+```
+
+#### Send logs to the server
+
+Example request (note that the authorization header is base64-encoded `insert_endpoint_uuid_here:3b0be5105ad4fd89efc3f2420f6074f3`):
+
+```
+curl -v \
+       -H "Authorization: Basic aW5zZXJ0X2VuZHBvaW50X3V1aWRfaGVyZTozYjBiZTUxMDVhZDRmZDg5ZWZjM2YyNDIwZjYwNzRmMw==" \
+       -H "Content-Type: application/json" \
+       --data '{"host_uuid": "insert_endpoint_uuid_here", "other_arbitrary_data": "goes here"}' \
+       http://127.0.0.1:5000/submit
+```
+
+Example response:
+
+```
+{
+  "error": false
+}
+```
