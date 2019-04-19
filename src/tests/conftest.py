@@ -2,7 +2,7 @@ import os
 import pytest
 
 from elasticsearch_dsl import Index, Search
-from gateway import create_app
+from flock_server import create_app
 
 
 @pytest.fixture
