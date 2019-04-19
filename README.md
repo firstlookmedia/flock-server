@@ -16,6 +16,10 @@ The server also includes a [Keybase](https://keybase.io/) bot ([coming soon](htt
 
 ## Developer notes
 
+### Test status
+
+[![CircleCI](https://circleci.com/gh/firstlookmedia/flock/tree/master.svg?style=svg)](https://circleci.com/gh/firstlookmedia/flock/tree/master)
+
 ### Running a local server
 
 To run a local server, you need Docker Compose.
