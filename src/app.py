@@ -1,7 +1,7 @@
 import time
 import requests
 
-from gateway import User, create_app, elasticsearch_url
+from flock_server import User, create_app, elasticsearch_url
 
 
 if __name__ == '__main__':

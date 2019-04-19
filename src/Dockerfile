@@ -11,6 +11,6 @@ RUN pipenv install --dev
 
 EXPOSE 5000
 
-ENV FLASK_APP gateway
+ENV FLASK_APP flock_server
 
 CMD ["pipenv", "run", "python", "-u", "app.py"]
