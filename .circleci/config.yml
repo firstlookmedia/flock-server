@@ -1,0 +1,45 @@
+version: 2
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test
+
+jobs:
+  test:
+    docker:
+      - image: circleci/python:3.7.2
+
+    steps:
+      - checkout
+
+      - setup_remote_docker
+
+      - run:
+          name: Build containers
+          command: docker build -t server src
+
+      - run:
+          name: Start containers
+          command: |
+            docker network create testnet
+            docker run -d \
+              --net testnet \
+              --name test-elasticsearch \
+              -e xpack.security.enabled=false \
+              -e transport.host=localhost \
+              elasticsearch:6.6.2@sha256:59dd45d05fe89cd713dfc20874c6298e1ec7eaf384e58410b677b9dead6986f1
+            docker run -d \
+              --net testnet \
+              --name test-server \
+              -e ELASTICSEARCH_HOSTS=http://test-elasticsearch:9200 \
+              server
+
+      - run:
+         name: Wait for elasticsearch to be available
+         command: docker exec -it test-server ./wait_for_es.sh
+
+      - run:
+          name: Run unit tests
+          command: docker exec -it test-server pipenv run python -m pytest

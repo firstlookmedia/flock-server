@@ -1,8 +1,8 @@
 version: '3'
 services:
 
-  gateway:
-    build: ../flock-gateway
+  server:
+    build: src
     environment:
       - ELASTICSEARCH_HOSTS=https://elasticsearch:9200
       # TODO: this password is only hard-coded during early development
@@ -10,7 +10,7 @@ services:
     ports:
       - "127.0.0.1:5000:5000"
     volumes:
-      - ../flock-gateway:/app
+      - ./src:/app
       - ./data/certs/certs/ca/ca.crt:/usr/share/ca-certificates/ca.crt
 
   elasticsearch:
