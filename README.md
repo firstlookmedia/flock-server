@@ -2,19 +2,17 @@
 
 _**⚠️ This software is under development. It's not ready to be used in production.**_
 
-Flock is a privacy-preserving fleet management system powered by osquery and the Elastic Stack.
-
-The goal of Flock is to gain visibility into a fleet of laptops while protecting the privacy of the laptop users. It achieves this by only collecting information needed to inform security decisions, and by not allow the IT team to access arbitrary files, or execute arbitrary code, on the laptops they are monitoring.
+Flock is a privacy-preserving fleet management system. The goal of Flock is to gain visibility into a fleet of laptops while protecting the privacy of the laptop users. It achieves this by only collecting information needed to inform security decisions, and by not allowing the IT team to access arbitrary files or execute arbitrary code on the laptops they are monitoring.
 
 See also [Flock Agent](https://github.com/firstlookmedia/flock-agent), the macOS agent that runs on endpoints, collects data, and shares it with the server.
 
 ## About the Flock server
 
-The purpose of Flock server is to accept data from all of the agents and save it in an Elasticsearch database. Agents register themselves with the server and get assigned an authentication token, then they use these credentials to submit logs from osquery, which get saved to the database. Agents have write-only access; they cannot read anything from the database.
+The purpose of Flock server is to accept data from all of the agents (collected by osquery) and save it in an Elasticsearch database. Agents register themselves with the server and get assigned an authentication token, then they use these credentials to submit logs from osquery, which get saved to the database. Agents have write-only access; they cannot read anything from the database.
 
-How you configure Elasticsearch and Kibana (for data visualizations) are outside the scope of this project. However we do provide a pre-built Kibana dashboard [coming soon](https://github.com/firstlookmedia/flock/issues/1)) for visualizations we find useful.
+How you configure Elasticsearch and Kibana (for data visualizations) are outside the scope of this project. However we do provide a pre-built Kibana dashboard ([coming soon](https://github.com/firstlookmedia/flock/issues/1)) for visualizations we find useful.
 
-The server also includes a [Keybase](https://keybase.io/) bot ([coming soon](https://github.com/firstlookmedia/flock/issues/2)) to send encrypted notifications to the security team. Security staff also send messages to the bot in order to administer the server.
+The server also includes a [Keybase](https://keybase.io/) bot ([coming soon](https://github.com/firstlookmedia/flock/issues/2)) to send encrypted notifications to a Keybase team, and security staff send messages to the bot in order to administer the server.
 
 ## Developer notes
 
@@ -56,14 +54,15 @@ cd src
 
 ### Server API
 
-#### Register to receive an authentication token
+#### POST /register
+
+Register to receive an authentication token.
 
 Example request:
 
 ```
-curl -v \
-       --data "username=insert_endpoint_uuid_here" \
-       http://127.0.0.1:5000/register
+curl --data "username=insert_endpoint_uuid_here" \
+     http://127.0.0.1:5000/register
 ```
 
 Example response:
@@ -75,16 +74,36 @@ Example response:
 }
 ```
 
-#### Send logs to the server
+#### GET /ping
 
-Example request (note that the authorization header is base64-encoded `insert_endpoint_uuid_here:3b0be5105ad4fd89efc3f2420f6074f3`):
+Make sure credentials exist on server. (Note that the authorization header is base64-encoded `insert_endpoint_uuid_here:3b0be5105ad4fd89efc3f2420f6074f3`.)
+
+Example request:
 
 ```
-curl -v \
-       -H "Authorization: Basic aW5zZXJ0X2VuZHBvaW50X3V1aWRfaGVyZTozYjBiZTUxMDVhZDRmZDg5ZWZjM2YyNDIwZjYwNzRmMw==" \
-       -H "Content-Type: application/json" \
-       --data '{"host_uuid": "insert_endpoint_uuid_here", "other_arbitrary_data": "goes here"}' \
-       http://127.0.0.1:5000/submit
+curl -H "Authorization: Basic aW5zZXJ0X2VuZHBvaW50X3V1aWRfaGVyZTozYjBiZTUxMDVhZDRmZDg5ZWZjM2YyNDIwZjYwNzRmMw==" \
+     http://127.0.0.1:5000/ping
+```
+
+Example response:
+
+```
+{
+  "error": false
+}
+```
+
+#### POST /submit
+
+Send logs to the server.
+
+Example request:
+
+```
+curl -H "Authorization: Basic aW5zZXJ0X2VuZHBvaW50X3V1aWRfaGVyZTozYjBiZTUxMDVhZDRmZDg5ZWZjM2YyNDIwZjYwNzRmMw==" \
+     -H "Content-Type: application/json" \
+     --data '[{"host_uuid": "insert_endpoint_uuid_here", "other_arbitrary_data": "goes here"}]' \
+     http://127.0.0.1:5000/submit
 ```
 
 Example response:
