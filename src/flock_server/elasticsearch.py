@@ -15,13 +15,20 @@ else:
 
 # Connect using both high-level and low-level elasticsearch clients
 if elasticsearch_url.startswith('https://'):
+    if 'ELASTIC_PASSWORD' in os.environ:
+        elastic_password = os.environ['ELASTIC_PASSWORD']
+    else:
+        elastic_password = ''
+
     connections.create_connection(
         hosts=[elasticsearch_url], timeout=20,
-        use_ssl=True, verify_certs=True, ca_certs=ca_cert_path
+        use_ssl=True, verify_certs=True, ca_certs=ca_cert_path,
+        http_auth=('elastic', elastic_password)
     )
     es = Elasticsearch(
         hosts=[elasticsearch_url], timeout=20,
-        use_ssl=True, verify_certs=True, ca_certs=ca_cert_path
+        use_ssl=True, verify_certs=True, ca_certs=ca_cert_path,
+        http_auth=('elastic', elastic_password)
     )
 else:
     connections.create_connection(hosts=[elasticsearch_url], timeout=20)

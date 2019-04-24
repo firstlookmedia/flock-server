@@ -18,11 +18,8 @@ if __name__ == '__main__':
             time.sleep(5)
 
     # Initialize models
-    try:
-        print('Initializing user model')
-        User.init()
-    except:
-        pass
+    print('Initializing user model')
+    User.init()
 
     # Start web service
     app = create_app()
