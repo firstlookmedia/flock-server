@@ -13,8 +13,7 @@ services:
       - ./data/certs/certs/ca/ca.crt:/usr/share/ca-certificates/ca.crt
 
   elasticsearch:
-    # elasticsearch:6.6.2 (on 2019-03-26)
-    image: "elasticsearch:6.6.2@sha256:59dd45d05fe89cd713dfc20874c6298e1ec7eaf384e58410b677b9dead6986f1"
+    image: "elasticsearch:6.6.2"
     environment:
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -38,8 +37,7 @@ services:
       - ./data/certs/certs/elasticsearch:/usr/share/elasticsearch/config/certificates/elasticsearch
 
   kibana:
-    # kibana:6.6.2 (on 2019-03-26)
-    image: "kibana:6.6.2@sha256:80e6f3b9ad20ce9d7a48c6c72828bc5b00369d77fa8208ed4bae1b9c8dc6e1ef"
+    image: "kibana:6.6.2"
     environment:
       ELASTICSEARCH_HOSTS: https://elasticsearch:9200
     ports:
