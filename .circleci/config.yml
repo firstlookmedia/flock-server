@@ -19,7 +19,7 @@ jobs:
       - run:
           name: Start containers
           command: |
-            docker-compose -f tests.yml up -d \
+            docker-compose -f tests.yml up -d &&
             docker exec -it project_test-server_1 ./wait_for_es.sh
 
       - run:
