@@ -43,8 +43,15 @@ The server web interface will be at http://127.0.0.1:5000, and Kibana will be ht
 Here's how to run server tests:
 
 ```
-cd src
-./run_tests.sh
+# start test containers
+docker-compose -f tests.yml up -d
+docker exec -it flock_test-server_1 ./wait_for_es.sh
+
+# run tests
+docker exec -it flock_test-server_1 pipenv run python -m pytest -vvv
+
+# stop test containers
+docker-compose -f tests.yml down
 ```
 
 ### Modifying pip dependencies
