@@ -3,7 +3,7 @@ services:
 
   create_certs:
     container_name: create_certs
-    image: "elasticsearch:6.6.2"
+    image: "elasticsearch:7.3.0"
     command: >
       bash -c '
         if [[ ! -d config/certificates/certs ]]; then
