@@ -10,12 +10,11 @@ services:
           mkdir config/certificates/certs;
         fi;
         if [[ ! -f /local/certs/bundle.zip ]]; then
+          yum install unzip -y;
           bin/elasticsearch-certgen --silent --in config/certificates/instances.yml --out config/certificates/certs/bundle.zip;
           unzip config/certificates/certs/bundle.zip -d config/certificates/certs;
         fi;
-        chgrp -R 0 config/certificates/certs
       '
-    user: ${UID:-1000}
     working_dir: /usr/share/elasticsearch
     volumes:
       - ./data/certs:/usr/share/elasticsearch/config/certificates
