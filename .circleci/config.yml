@@ -23,7 +23,10 @@ jobs:
 
       - run:
           name: Wait for elasticsearch
-          command: docker exec -it project_test-server_1 /app/wait_for_es.sh
+          command:
+            docker exec -it project_test-server_1 pwd &&
+            docker exec -it project_test-server_1 which bash &&
+            docker exec -it project_test-server_1 /app/wait_for_es.sh
 
       - run:
           name: Run unit tests
