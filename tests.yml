@@ -5,8 +5,6 @@ services:
     build: ./src
     environment:
       - ELASTICSEARCH_HOSTS=http://test-elasticsearch:9200
-    volumes:
-      - ./src:/app
 
   test-elasticsearch:
     image: "elasticsearch:7.3.0"

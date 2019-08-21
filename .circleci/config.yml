@@ -18,10 +18,7 @@ jobs:
 
       - run:
           name: Start containers
-          command: |
-            docker-compose -f tests.yml up --no-start test-server
-            docker cp ./src project_test-server_1:/app
-            docker-compose -f tests.yml up --no-recreate -d
+          command: docker-compose -f tests.yml up -d
 
       - run:
           name: Wait for elasticsearch
