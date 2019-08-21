@@ -3,19 +3,18 @@ services:
 
   create_certs:
     container_name: create_certs
-    image: "elasticsearch:6.6.2"
+    image: "elasticsearch:7.3.0"
     command: >
       bash -c '
         if [[ ! -d config/certificates/certs ]]; then
           mkdir config/certificates/certs;
         fi;
         if [[ ! -f /local/certs/bundle.zip ]]; then
+          yum install unzip -y;
           bin/elasticsearch-certgen --silent --in config/certificates/instances.yml --out config/certificates/certs/bundle.zip;
           unzip config/certificates/certs/bundle.zip -d config/certificates/certs;
         fi;
-        chgrp -R 0 config/certificates/certs
       '
-    user: ${UID:-1000}
     working_dir: /usr/share/elasticsearch
     volumes:
       - ./data/certs:/usr/share/elasticsearch/config/certificates

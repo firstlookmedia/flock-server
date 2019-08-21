@@ -9,7 +9,7 @@ workflows:
 jobs:
   test:
     docker:
-      - image: circleci/python:3.7.2
+      - image: circleci/python:3.7.4-buster
 
     steps:
       - checkout
@@ -17,29 +17,15 @@ jobs:
       - setup_remote_docker
 
       - run:
-          name: Build containers
-          command: docker build -t server src
-
-      - run:
           name: Start containers
-          command: |
-            docker network create testnet
-            docker run -d \
-              --net testnet \
-              --name test-elasticsearch \
-              -e xpack.security.enabled=false \
-              -e transport.host=localhost \
-              elasticsearch:6.6.2
-            docker run -d \
-              --net testnet \
-              --name test-server \
-              -e ELASTICSEARCH_HOSTS=http://test-elasticsearch:9200 \
-              server
+          command: docker-compose -f tests.yml up -d
 
       - run:
-         name: Wait for elasticsearch to be available
-         command: docker exec -it test-server ./wait_for_es.sh
+          name: Wait for elasticsearch
+          command: |
+            sleep 2;
+            docker exec -it project_test-server_1 ./wait_for_es.sh
 
       - run:
           name: Run unit tests
-          command: docker exec -it test-server pipenv run python -m pytest
+          command: docker exec -it project_test-server_1 pipenv run python -m pytest -vvv
