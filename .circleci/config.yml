@@ -26,15 +26,11 @@ jobs:
             docker-compose -f tests.yml up -d
 
       - run:
-          name: List containers
-          command: |
-            sleep 5
-            docker container ls
-
-      - run:
          name: Wait for elasticsearch to be available
-         command: docker exec -it test-server ./wait_for_es.sh
+         command:
+          sleep 30
+          docker exec -it project_test-server_1 ./wait_for_es.sh
 
       - run:
           name: Run unit tests
-          command: docker exec -it test-server pipenv run python -m pytest -vvv
+          command: docker exec -it project_test-server_1 pipenv run python -m pytest -vvv
