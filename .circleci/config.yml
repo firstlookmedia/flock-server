@@ -23,18 +23,13 @@ jobs:
       - run:
           name: Start containers
           command: |
-            docker network create testnet
-            docker run -d \
-              --net testnet \
-              --name test-elasticsearch \
-              -e xpack.security.enabled=false \
-              -e transport.host=localhost \
-              elasticsearch:6.6.2
-            docker run -d \
-              --net testnet \
-              --name test-server \
-              -e ELASTICSEARCH_HOSTS=http://test-elasticsearch:9200 \
-              server
+            docker-compose -f tests.yml -d
+
+      - run:
+          name: List containers
+          command: |
+            sleep 5
+            docker container ls
 
       - run:
          name: Wait for elasticsearch to be available
@@ -42,4 +37,4 @@ jobs:
 
       - run:
           name: Run unit tests
-          command: docker exec -it test-server pipenv run python -m pytest
+          command: docker exec -it test-server pipenv run python -m pytest -vvv
