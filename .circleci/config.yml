@@ -23,7 +23,7 @@ jobs:
       - run:
           name: Start containers
           command: |
-            docker-compose -f tests.yml -d
+            docker-compose -f tests.yml up -d
 
       - run:
           name: List containers
