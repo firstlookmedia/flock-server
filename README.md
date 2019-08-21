@@ -36,7 +36,7 @@ Then start all containers.
 docker-compose up
 ```
 
-The server web interface will be at http://127.0.0.1:5000, and Kibana will be https://127.0.0.1:5601 (with a self-signed cert).
+The server web interface will be at http://127.0.0.1:5000, and Kibana will be https://127.0.0.1:5601 (with a self-signed cert, and with the username `elastic` and the password `insecure_docker_compose_password_dont_use_in_production`).
 
 ### Running tests
 
