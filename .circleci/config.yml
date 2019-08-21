@@ -19,7 +19,7 @@ jobs:
       - run:
           name: Start containers
           command: |
-            docker-compose -f tests.yml up -d
+            docker-compose -f tests.yml up
 
       - run:
           name: Wait for elasticsearch
