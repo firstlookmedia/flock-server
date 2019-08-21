@@ -17,6 +17,11 @@ jobs:
       - setup_remote_docker
 
       - run:
-          name: Run tests
+          name: Start containers
           command: |
-            cd src && ./run_tests.sh
+            docker-compose -f tests.yml up -d \
+            docker exec -it project_test-server_1 ./wait_for_es.sh
+
+      - run:
+          name: Run unit tests
+          command: docker exec -it project_test-server_1 pipenv run python -m pytest -vvv
