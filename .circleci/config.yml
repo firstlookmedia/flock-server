@@ -24,7 +24,23 @@ jobs:
       - run:
           name: Wait for elasticsearch
           command:
-            sleep 30 &&
+            sleep 10 &&
+            docker container ls &&
+            sleep 10 &&
+            docker container ls &&
+            sleep 10 &&
+            docker container ls &&
+            sleep 10 &&
+            docker container ls &&
+            sleep 10 &&
+            docker container ls &&
+            sleep 10 &&
+            docker container ls &&
+            sleep 10 &&
+            docker container ls &&
+            sleep 10 &&
+            docker container ls &&
+            sleep 10 &&
             docker exec -it project_test-server_1 bash ./wait_for_es.sh
 
       - run:
