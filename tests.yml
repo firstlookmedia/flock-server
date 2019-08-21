@@ -2,7 +2,7 @@ version: '3'
 services:
 
   test-server:
-    build: src
+    build: ./src
     environment:
       - ELASTICSEARCH_HOSTS=http://test-elasticsearch:9200
     volumes:

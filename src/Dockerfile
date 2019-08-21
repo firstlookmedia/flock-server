@@ -12,6 +12,4 @@ EXPOSE 5000
 
 ENV FLASK_APP flock_server
 
-CMD ["pwd"]
-CMD ["ls -al /app"]
 CMD ["pipenv", "run", "python", "-u", "app.py"]
