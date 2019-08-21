@@ -17,14 +17,6 @@ jobs:
       - setup_remote_docker
 
       - run:
-          name: Start containers
+          name: Run tests
           command: |
-            docker-compose -f tests.yml up -d
-
-      - run:
-         name: Wait for elasticsearch to be available
-         command: sleep 30; docker exec -it project_test-server_1 ./wait_for_es.sh
-
-      - run:
-          name: Run unit tests
-          command: docker exec -it project_test-server_1 pipenv run python -m pytest -vvv
+            cd src && ./run_tests.sh

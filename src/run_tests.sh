@@ -27,7 +27,7 @@ docker exec -it test-server ./wait_for_es.sh
 echo
 
 printf "${BLUE}* Running tests${NC}\n"
-docker exec -it test-server pipenv run python -m pytest
+docker exec -it test-server pipenv run python -m pytest -vvv
 echo
 
 printf "${BLUE}* Stopping containers${NC}\n"
