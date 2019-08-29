@@ -7,7 +7,10 @@ from elasticsearch_dsl import connections, Date, Document, Index, Text
 
 
 # Configure ElasticSearch default connection
-ca_cert_path = '/usr/share/ca-certificates/ca.crt'
+if 'ELASTIC_CA_CERT' in os.environ:
+    ca_cert_path = os.environ['ELASTIC_CA_CERT']
+else:
+    ca_cert_path = None
 if 'ELASTICSEARCH_HOSTS' in os.environ:
     elasticsearch_url = os.environ['ELASTICSEARCH_HOSTS']
 else:

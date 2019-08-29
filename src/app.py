@@ -1,5 +1,6 @@
 import time
 import requests
+import os
 
 from flock_server import User, create_app, elasticsearch_url
 
@@ -9,7 +10,12 @@ if __name__ == '__main__':
     print('Waiting for ElasticSearch')
     while True:
         try:
-            r = requests.get(elasticsearch_url, verify='/usr/share/ca-certificates/ca.crt')
+            if 'ELASTIC_CA_CERT' in os.environ:
+                ca_cert_path = os.environ['ELASTIC_CA_CERT']
+            else:
+                ca_cert_path = None
+
+            r = requests.get(elasticsearch_url, verify=ca_cert_path)
             print('{} is ready'.format(elasticsearch_url))
             break
 
