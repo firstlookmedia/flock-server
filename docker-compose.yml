@@ -1,14 +1,23 @@
 version: '3'
 services:
 
-  server:
+  gateway:
     build: src
     environment:
-      - ELASTICSEARCH_HOSTS=https://elasticsearch:9200
+      - "ELASTICSEARCH_HOSTS=https://elasticsearch:9200"
       - "ELASTIC_PASSWORD=insecure_docker_compose_password_dont_use_in_production"
       - ELASTIC_CA_CERT=/usr/share/ca-certificates/ca.crt
     ports:
       - "127.0.0.1:5000:5000"
+    volumes:
+      - ./data/certs/certs/ca/ca.crt:/usr/share/ca-certificates/ca.crt
+
+  keybase:
+    build: src
+    environment:
+      - "ELASTICSEARCH_HOSTS=https://elasticsearch:9200"
+      - "ELASTIC_PASSWORD=insecure_docker_compose_password_dont_use_in_production"
+      - "FLOCK_KEYBASE=1"
     volumes:
       - ./data/certs/certs/ca/ca.crt:/usr/share/ca-certificates/ca.crt
 
