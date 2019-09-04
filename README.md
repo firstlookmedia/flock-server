@@ -20,6 +20,10 @@ The server also includes a [Keybase](https://keybase.io/) bot ([coming soon](htt
 
 [![CircleCI](https://circleci.com/gh/firstlookmedia/flock/tree/master.svg?style=svg)](https://circleci.com/gh/firstlookmedia/flock/tree/master)
 
+### Keybase credentials
+
+Copy `keybase-sample.py` to `keybase.py`, and then edit it to include your dev keybase username and paperkey.
+
 ### Running a local server
 
 To run a local server, you need Docker Compose.
