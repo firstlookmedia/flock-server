@@ -9,7 +9,7 @@ from elasticsearch_dsl import Index, Search
 from .elasticsearch import es, User
 
 
-def create_app(test_config=None):
+def create_api_app(test_config=None):
     # Flask
     app = Flask(__name__)
     if test_config:

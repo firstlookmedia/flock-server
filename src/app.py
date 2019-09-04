@@ -1,9 +1,8 @@
 import time
 import requests
 import os
-import asyncio
 
-from flock_server import User, create_app, elasticsearch_url
+from flock_server import User, create_api_app, create_keybase_bot, elasticsearch_url
 
 
 if __name__ == '__main__':
@@ -29,9 +28,9 @@ if __name__ == '__main__':
     User.init()
 
     if os.environ.get('FLOCK_KEYBASE') == "1":
-        print("KEYBASE MODE")
+        create_keybase_bot()
 
     else:
         # Start web service
-        app = create_app()
+        app = create_api_app()
         app.run(host='0.0.0.0', port=5000, debug=True)
