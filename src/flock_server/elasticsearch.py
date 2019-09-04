@@ -7,7 +7,10 @@ from elasticsearch_dsl import connections, Date, Document, Index, Text
 
 
 # Configure ElasticSearch default connection
-ca_cert_path = '/usr/share/ca-certificates/ca.crt'
+if 'ELASTIC_CA_CERT' in os.environ:
+    ca_cert_path = os.environ['ELASTIC_CA_CERT']
+else:
+    ca_cert_path = None
 if 'ELASTICSEARCH_HOSTS' in os.environ:
     elasticsearch_url = os.environ['ELASTICSEARCH_HOSTS']
 else:
@@ -16,19 +19,19 @@ else:
 # Connect using both high-level and low-level elasticsearch clients
 if elasticsearch_url.startswith('https://'):
     if 'ELASTIC_PASSWORD' in os.environ:
-        elastic_password = os.environ['ELASTIC_PASSWORD']
+        http_auth = ('elastic', os.environ['ELASTIC_PASSWORD'])
     else:
-        elastic_password = ''
+        http_auth = None
 
     connections.create_connection(
         hosts=[elasticsearch_url], timeout=20,
         use_ssl=True, verify_certs=True, ca_certs=ca_cert_path,
-        http_auth=('elastic', elastic_password)
+        http_auth=http_auth
     )
     es = Elasticsearch(
         hosts=[elasticsearch_url], timeout=20,
         use_ssl=True, verify_certs=True, ca_certs=ca_cert_path,
-        http_auth=('elastic', elastic_password)
+        http_auth=http_auth
     )
 else:
     connections.create_connection(hosts=[elasticsearch_url], timeout=20)
