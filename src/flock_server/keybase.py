@@ -60,16 +60,12 @@ class Handler:
 
             # Parse the command
             cmd_parts_with_mention = event.msg.content.text.body.split()
-            if event.msg.channel.name == os.environ.get('KEYBASE_CHANNEL'):
-                # If this is in the team, strip to mention
-                cmd_parts = []
-                for cmd_part in cmd_parts_with_mention:
-                    if cmd_part != '@{}'.format(os.environ.get("KEYBASE_USERNAME")):
-                        cmd_parts.append(cmd_part)
-                if len(cmd_parts) == 0:
-                    return
-            else:
-                cmd_parts = cmd_parts_with_mention
+            cmd_parts = []
+            for cmd_part in cmd_parts_with_mention:
+                if cmd_part != '@{}'.format(os.environ.get("KEYBASE_USERNAME")):
+                    cmd_parts.append(cmd_part)
+            if len(cmd_parts) == 0:
+                return
 
             # Execute the command
             cmd = cmd_parts[0]
