@@ -1,6 +1,8 @@
 import asyncio
 import logging
 import os
+import subprocess
+from concurrent.futures import TimeoutError
 
 from pykeybasebot import Bot
 
@@ -13,16 +15,23 @@ class Handler:
 
 
 async def start(bot, channel):
-    await asyncio.gather(
-        bot.chat.send(channel, "My process just started :computer:"),
-        bot.start({
-            "local": False,
-            "wallet": False,
-            "dev": False,
-            "hide-exploding": False,
-            "filter_channel": channel
-        })
-    )
+    # Keep trying to post welcome message until it works
+    while True:
+        try:
+            print("Trying to post keybase message...")
+            await bot.chat.send(channel, "My process just started :computer:")
+            break
+        except TimeoutError:
+            print("Timed out, waiting 1 second")
+            await asyncio.sleep(1)
+
+    await bot.start({
+        "local": False,
+        "wallet": False,
+        "dev": False,
+        "hide-exploding": False,
+        "filter_channel": channel
+    })
 
 
 def start_keybase_bot():
@@ -43,7 +52,10 @@ def start_keybase_bot():
     if not validated:
         return
 
-    # Start the bot
+    # Run keybase service
+    subprocess.call(["run_keybase", "-g"])
+
+    # Create the bot
     bot = Bot(
         username=os.environ.get("KEYBASE_USERNAME"),
         paperkey=os.environ.get("KEYBASE_PAPERKEY"),
@@ -55,6 +67,7 @@ def start_keybase_bot():
         "members_type": "team"
     }
 
+    # Start the bot
     asyncio.run(start(bot, channel))
 
 

@@ -1,8 +1,5 @@
 FROM python:3.7.4-buster
 
-# Copy code
-COPY . /app
-
 # Install keybase
 RUN \
 	apt-get update && apt-get install -y \
@@ -31,6 +28,9 @@ RUN pip install pipenv
 # Switch to unprivileged user
 RUN useradd -ms /bin/bash user
 USER user:user
+
+# Copy code
+COPY . /app
 WORKDIR /app
 
 # Install python dependencies
