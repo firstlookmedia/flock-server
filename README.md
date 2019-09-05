@@ -26,21 +26,13 @@ Copy `keybase-sample.py` to `keybase.py`, and then edit it to include your dev k
 
 ### Running a local server
 
-To run a local server, you need Docker Compose.
-
-First you must generate the certificates. (This command generates keys and certificates in `data/certs/certs`. If you want to regenerate them, delete that folder and run the command again.)
-
-```sh
-docker-compose -f create-certs.yml up
-```
-
-Then start all containers.
+To run a local server, you need Docker Compose. Then start all containers.
 
 ```sh
 docker-compose up
 ```
 
-The server web interface will be at http://127.0.0.1:5000, and Kibana will be https://127.0.0.1:5601 (with a self-signed cert, and with the username `elastic` and the password `insecure_docker_compose_password_dont_use_in_production`).
+The server web interface will be at http://127.0.0.1:5000, and Kibana will be http://127.0.0.1:5601.
 
 ### Running tests
 

@@ -4,37 +4,22 @@ services:
   gateway:
     build: src
     environment:
-      - "ELASTICSEARCH_HOSTS=https://elasticsearch:9200"
-      - "ELASTIC_PASSWORD=insecure_docker_compose_password_dont_use_in_production"
-      - ELASTIC_CA_CERT=/usr/share/ca-certificates/ca.crt
+      - "ELASTICSEARCH_HOSTS=http://elasticsearch:9200"
     ports:
       - "127.0.0.1:5000:5000"
-    volumes:
-      - ./data/certs/certs/ca/ca.crt:/usr/share/ca-certificates/ca.crt
 
   keybase:
     build: src
     environment:
-      - "ELASTICSEARCH_HOSTS=https://elasticsearch:9200"
-      - "ELASTIC_PASSWORD=insecure_docker_compose_password_dont_use_in_production"
+      - "ELASTICSEARCH_HOSTS=http://elasticsearch:9200"
       - "FLOCK_KEYBASE=1"
     env_file:
       - keybase.env
-    volumes:
-      - ./data/certs/certs/ca/ca.crt:/usr/share/ca-certificates/ca.crt
 
   elasticsearch:
     image: "elasticsearch:7.3.0"
     environment:
       - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
-      - "ELASTIC_PASSWORD=insecure_docker_compose_password_dont_use_in_production"
-      - xpack.security.enabled=true
-      - xpack.security.transport.ssl.enabled=true
-      - xpack.security.transport.ssl.verification_mode=certificate
-      - xpack.security.http.ssl.enabled=true
-      - xpack.security.http.ssl.certificate_authorities=/usr/share/elasticsearch/config/certificates/ca/ca.crt
-      - xpack.security.http.ssl.certificate=/usr/share/elasticsearch/config/certificates/elasticsearch/elasticsearch.crt
-      - xpack.security.http.ssl.key=/usr/share/elasticsearch/config/certificates/elasticsearch/elasticsearch.key
       - discovery.type=single-node
     ulimits:
       memlock:
@@ -44,16 +29,10 @@ services:
       - "9200:9200"
     volumes:
       - ./data/elasticsearch:/usr/share/elasticsearch/data
-      - ./data/certs/certs/ca/ca.crt:/usr/share/elasticsearch/config/certificates/ca/ca.crt
-      - ./data/certs/certs/elasticsearch:/usr/share/elasticsearch/config/certificates/elasticsearch
 
   kibana:
     image: "kibana:7.3.0"
     environment:
-      ELASTICSEARCH_HOSTS: https://elasticsearch:9200
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
     ports:
       - "5601:5601"
-    volumes:
-      - ./kibana.yml:/usr/share/kibana/config/kibana.yml
-      - ./data/certs/certs/ca/ca.crt:/usr/share/kibana/config/certificates/ca/ca.crt
-      - ./data/certs/certs/kibana:/usr/share/kibana/config/certificates/kibana
