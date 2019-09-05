@@ -13,6 +13,7 @@ class Handler:
 
 
 def start_keybase_bot():
+
     bot = Bot(
         username=os.environ["KEYBASE_USERNAME"],
         paperkey=os.environ["KEYBASE_PAPERKEY"],
@@ -20,7 +21,7 @@ def start_keybase_bot():
     )
     asyncio.run(bot.start({
         "local": True,
-        "wallet": True,
+        "wallet": False,
         "dev": True,
         "hide-exploding": False,
         "filter_channel": None,

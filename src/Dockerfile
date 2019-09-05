@@ -1,12 +1,7 @@
 FROM python:3.7.4-buster
 
 # Copy code
-WORKDIR /app
 COPY . /app
-
-# Install python dependencies
-RUN pip install pipenv
-RUN pipenv --python /usr/local/bin/python install --dev
 
 # Install keybase
 RUN \
@@ -30,8 +25,18 @@ RUN \
 	&& rm -r /var/lib/apt/lists/* \
 	&& rm keybase_amd64.deb*
 
-EXPOSE 5000
+# Install pipenv
+RUN pip install pipenv
 
+# Switch to unprivileged user
+RUN useradd -ms /bin/bash user
+USER user:user
+WORKDIR /app
+
+# Install python dependencies
+RUN pipenv --python /usr/local/bin/python install --dev
+
+EXPOSE 5000
 ENV FLASK_APP flock_server
 
 CMD ["pipenv", "run", "python", "-u", "app.py"]
