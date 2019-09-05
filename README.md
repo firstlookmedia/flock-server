@@ -22,7 +22,7 @@ The server also includes a [Keybase](https://keybase.io/) bot ([coming soon](htt
 
 ### Keybase credentials
 
-Copy `keybase-sample.py` to `keybase.py`, and then edit it to include your dev keybase username and paperkey.
+Copy `keybase-sample.env` to `keybase.env`, and then edit it to include your dev keybase username and paperkey.
 
 ### Running a local server
 
