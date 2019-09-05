@@ -1,7 +1,7 @@
 version: '3'
 services:
 
-  test-server:
+  test-gateway:
     build: ./src
     environment:
       - ELASTICSEARCH_HOSTS=http://test-elasticsearch:9200

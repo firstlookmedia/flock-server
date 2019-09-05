@@ -41,10 +41,10 @@ Here's how to run server tests:
 ```
 # start test containers
 docker-compose -f tests.yml up -d
-docker exec -it flock_test-server_1 ./wait_for_es.sh
+docker exec -it flock_test-gateway_1 ./wait_for_es.sh
 
 # run tests
-docker exec -it flock_test-server_1 pipenv run python -m pytest -vvv
+docker exec -it flock_test-gateway_1 pipenv run python -m pytest -vvv
 
 # stop test containers
 docker-compose -f tests.yml down
