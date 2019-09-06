@@ -5,3 +5,5 @@ tests/data/gateway
 tests/data/elasticsearch
 
 .DS_Store
+
+keybase.env

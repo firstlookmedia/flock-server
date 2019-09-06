@@ -2,13 +2,13 @@ import os
 import pytest
 
 from elasticsearch_dsl import Index, Search
-from flock_server import create_app
+from flock_server import create_api_app
 
 
 @pytest.fixture
 def app():
     """Create and configure a new app instance for each test."""
-    app = create_app({
+    app = create_api_app({
         'TESTING': True
     })
 

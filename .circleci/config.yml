@@ -24,8 +24,8 @@ jobs:
           name: Wait for elasticsearch
           command: |
             sleep 2;
-            docker exec -it project_test-server_1 ./wait_for_es.sh
+            docker exec -it project_test-gateway_1 ./wait_for_es.sh
 
       - run:
           name: Run unit tests
-          command: docker exec -it project_test-server_1 pipenv run python -m pytest -vvv
+          command: docker exec -it project_test-gateway_1 pipenv run python -m pytest -vvv

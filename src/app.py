@@ -2,7 +2,7 @@ import time
 import requests
 import os
 
-from flock_server import User, create_app, elasticsearch_url
+from flock_server import User, create_api_app, start_keybase_bot, elasticsearch_url
 
 
 if __name__ == '__main__':
@@ -27,6 +27,10 @@ if __name__ == '__main__':
     print('Initializing user model')
     User.init()
 
-    # Start web service
-    app = create_app()
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    if os.environ.get('FLOCK_KEYBASE') == "1":
+        start_keybase_bot()
+
+    else:
+        # Start web service
+        app = create_api_app()
+        app.run(host='0.0.0.0', port=5000, debug=True)
