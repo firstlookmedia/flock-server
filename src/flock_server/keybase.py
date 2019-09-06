@@ -6,7 +6,7 @@ from concurrent.futures import TimeoutError
 
 import pykeybasebot
 
-logging.basicConfig(level=logging.DEBUG)
+#logging.basicConfig(level=logging.DEBUG)
 
 
 class Handler:
@@ -14,11 +14,16 @@ class Handler:
         self.cmds = {
             "help": {
                 "exec": self.help,
-                "desc": "List of commands that I know"
+                "desc": "Show this message"
             },
             "list_users": {
                 "exec": self.list_users,
-                "desc": "List the UUIDs of flock agents"
+                "desc": "List all registered users"
+            },
+            "delete_user": {
+                "exec": self.delete_user,
+                "args": ["username"],
+                "desc": "Delete a user"
             }
         }
 
@@ -70,23 +75,29 @@ class Handler:
             # Execute the command
             cmd = cmd_parts[0]
             if cmd in self.cmds:
-                print(cmd_parts)
                 await self.cmds[cmd]['exec'](bot, event, cmd_parts)
             else:
-                await bot.chat.send(event.msg.channel.replyable_dict(),
-                    "@{}: unknown command".format(event.msg.sender.username))
+                await self._send(bot, event, "@{}: unknown command".format(event.msg.sender.username))
+
+    async def _send(self, bot, event, message):
+        print("Sending message to {}: {}".format(event.msg.channel.name, message))
+        await bot.chat.send(event.msg.channel.replyable_dict(), message)
 
     async def help(self, bot, event, cmd_parts):
-        formatted_commands = ['**{}**: {}'.format(cmd, self.cmds[cmd]['desc']) for cmd in self.cmds]
-        await bot.chat.send(event.msg.channel.replyable_dict(),
-            "@{}: These are the commands I know:\n{}".format(
-                event.msg.sender.username,
-                '\n'.join(formatted_commands)))
+        formatted = []
+        for cmd in self.cmds:
+            if 'args' in self.cmds[cmd]:
+                formatted.append('**{} [{}]**: {}'.format(cmd, '] ['.join(self.cmds[cmd]['args']), self.cmds[cmd]['desc']))
+            else:
+                formatted.append('**{}**: {}'.format(cmd, self.cmds[cmd]['desc']))
+
+        await self._send(bot, event, "@{}: These are the commands I know:\n{}".format(event.msg.sender.username, '\n'.join(formatted)))
 
     async def list_users(self, bot, event, cmd_parts):
-        await bot.chat.send(event.msg.channel.replyable_dict(),
-            "@{}: **list_users** command is not implemented yet".format(
-                event.msg.sender.username))
+        await self._send(bot, event, "@{}: **list_users** command is not implemented yet".format(event.msg.sender.username))
+
+    async def delete_user(self, bot, event, cmd_parts):
+        await self._send(bot, event, "@{}: **delete_user** command is not implemented yet".format(event.msg.sender.username))
 
 
 async def start(bot, channel):
@@ -98,14 +109,14 @@ async def start(bot, channel):
             await bot.chat.send(channel, ":zzz:"*tries)
             break
         except TimeoutError:
-            print("Timed out, waiting 1 second")
+            print("Timed out, waiting 2 seconds")
             tries += 1
-            await asyncio.sleep(1)
+            await asyncio.sleep(2)
 
     # Send welcome message and start listening
     await asyncio.gather(
         bot.chat.send(channel,
-            "Hello, friends! I'm a :robot_face:, and my process just woke up.\nFor a list of commands: `@{} help`".format(
+            "Hello, friends! I'm a :robot_face:, and my process just woke up. Ask me for `help` for a list of commands.".format(
                 os.environ.get('KEYBASE_USERNAME')
             )),
         bot.start({
