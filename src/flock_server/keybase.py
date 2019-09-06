@@ -90,25 +90,33 @@ class Handler:
 
 
 async def start(bot, channel):
-    # Keep trying to post welcome message until it works
+    # Wait for keybase to be available
+    tries = 1
     while True:
         try:
-            print("Trying to post keybase message...")
-            await bot.chat.send(channel,
-                "Hello, friends. I'm a :robot_face:, and my process just started.\nFor a list of commands: `@{} help`".format(os.environ.get('KEYBASE_USERNAME')))
+            print("Ensuring bot is initialized...")
+            await bot.chat.send(channel, ":zzz:"*tries)
             break
         except TimeoutError:
             print("Timed out, waiting 1 second")
+            tries += 1
             await asyncio.sleep(1)
 
-    await bot.start({
-        "local": False,
-        "wallet": False,
-        "dev": False,
-        "hide-exploding": False,
-        "filter_channels": None,
-        "filter_channel": channel
-    })
+    # Send welcome message and start listening
+    await asyncio.gather(
+        bot.chat.send(channel,
+            "Hello, friends! I'm a :robot_face:, and my process just woke up.\nFor a list of commands: `@{} help`".format(
+                os.environ.get('KEYBASE_USERNAME')
+            )),
+        bot.start({
+            "local": False,
+            "wallet": False,
+            "dev": False,
+            "hide-exploding": False,
+            "filter_channels": None,
+            "filter_channel": channel
+        })
+    )
 
 
 def start_keybase_bot():
