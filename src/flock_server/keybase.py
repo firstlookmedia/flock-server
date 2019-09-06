@@ -5,6 +5,10 @@ import subprocess
 from concurrent.futures import TimeoutError
 
 import pykeybasebot
+from elasticsearch_dsl import Index, Search
+
+from .elasticsearch import es, User
+
 
 #logging.basicConfig(level=logging.DEBUG)
 
@@ -73,7 +77,7 @@ class Handler:
                 return
 
             # Execute the command
-            cmd = cmd_parts[0]
+            cmd = cmd_parts.pop(0)
             if cmd in self.cmds:
                 await self.cmds[cmd]['exec'](bot, event, cmd_parts)
             else:
@@ -83,21 +87,53 @@ class Handler:
         print("Sending message to {}: {}".format(event.msg.channel.name, message))
         await bot.chat.send(event.msg.channel.replyable_dict(), message)
 
-    async def help(self, bot, event, cmd_parts):
-        formatted = []
-        for cmd in self.cmds:
-            if 'args' in self.cmds[cmd]:
-                formatted.append('**{} [{}]**: {}'.format(cmd, '] ['.join(self.cmds[cmd]['args']), self.cmds[cmd]['desc']))
-            else:
-                formatted.append('**{}**: {}'.format(cmd, self.cmds[cmd]['desc']))
+    def _usage(self, cmd):
+        if 'args' in self.cmds[cmd]:
+            return '**{} [{}]**: {}'.format(cmd, '] ['.join(self.cmds[cmd]['args']), self.cmds[cmd]['desc'])
+        else:
+            return '**{}**: {}'.format(cmd, self.cmds[cmd]['desc'])
 
+    async def _reply_with_usage(self, bot, event, cmd):
+        await self._send(bot, event, "@{}: Here is how to use this command:\n{}".format(
+            event.msg.sender.username, self._usage(cmd)))
+
+    async def help(self, bot, event, cmd_parts):
+        formatted = [self._usage(cmd) for cmd in self.cmds]
         await self._send(bot, event, "@{}: These are the commands I know:\n{}".format(event.msg.sender.username, '\n'.join(formatted)))
 
     async def list_users(self, bot, event, cmd_parts):
-        await self._send(bot, event, "@{}: **list_users** command is not implemented yet".format(event.msg.sender.username))
+        r = Search(index="user").query("match_all").execute()
+        users = [str(hit['username']) for hit in r]
+        await self._send(bot, event, "@{}: Here are all registered users:\n```\n{}\n```".format(event.msg.sender.username, '\n'.join(users)))
 
     async def delete_user(self, bot, event, cmd_parts):
-        await self._send(bot, event, "@{}: **delete_user** command is not implemented yet".format(event.msg.sender.username))
+        if len(cmd_parts) < 1:
+            await self._reply_with_usage(bot, event, 'delete_user')
+            return
+
+        username = cmd_parts.pop(0)
+
+        # Validation
+        valid = True
+        valid_chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-'
+        for c in username:
+            if c not in valid_chars:
+                valid = False
+                break
+        if not valid:
+            await self._send(bot, event, "@{}: The username you gave me contains invalid characters. You're not trying to be sneaky, are you?".format(event.msg.sender.username))
+            return
+
+        # Get the user
+        results = User.search().query('match', username=username).execute()
+        if len(results) == 0:
+            await self._send(bot, event, "@{}: No users with that username are registered.".format(event.msg.sender.username))
+            return
+
+        # Delete the user
+        user = results[0]
+        user.delete()
+        await self._send(bot, event, "@{}: User **{}** has been deleted.".format(event.msg.sender.username, username))
 
 
 async def start(bot, channel):
@@ -105,13 +141,12 @@ async def start(bot, channel):
     tries = 1
     while True:
         try:
+            await asyncio.sleep(5)
             print("Ensuring bot is initialized...")
             await bot.chat.send(channel, ":zzz:"*tries)
             break
         except TimeoutError:
-            print("Timed out, waiting 2 seconds")
             tries += 1
-            await asyncio.sleep(2)
 
     # Send welcome message and start listening
     await asyncio.gather(
