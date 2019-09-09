@@ -138,7 +138,7 @@ class Handler:
 
     async def list_users(self, bot, event, args):
         r = Search(index="user").query("match_all").execute()
-        users = ['`{}` :point_right: **{}**'.format(str(hit['username']), str(hit['name'])) for hit in r]
+        users = ['**{}** :point_right: **{}**'.format(str(hit['username']), str(hit['name'])) for hit in r]
         if len(users) == 0:
             await self._send(bot, event, "@{}: There are no registered users :cry:".format(event.msg.sender.username))
         else:
