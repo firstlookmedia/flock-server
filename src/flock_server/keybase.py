@@ -2,6 +2,7 @@ import asyncio
 import logging
 import os
 import subprocess
+import shlex
 from concurrent.futures import TimeoutError
 
 import pykeybasebot
@@ -68,7 +69,7 @@ class Handler:
                 return
 
             # Parse the command
-            cmd_parts_with_mention = event.msg.content.text.body.split()
+            cmd_parts_with_mention = shlex.split(event.msg.content.text.body)
             cmd_parts = []
             for cmd_part in cmd_parts_with_mention:
                 if cmd_part != '@{}'.format(os.environ.get("KEYBASE_USERNAME")):
@@ -76,10 +77,16 @@ class Handler:
             if len(cmd_parts) == 0:
                 return
 
-            # Execute the command
+            # Validate the command
             cmd = cmd_parts.pop(0)
+            args = cmd_parts
+            if len(args) != len(self.cmds[cmd]['args']):
+                await self._reply_with_usage(bot, event, cmd)
+                return
+
+            # Execute the command
             if cmd in self.cmds:
-                await self.cmds[cmd]['exec'](bot, event, cmd_parts)
+                await self.cmds[cmd]['exec'](bot, event, args)
             else:
                 await self._send(bot, event, "@{}: unknown command".format(event.msg.sender.username))
 
@@ -110,10 +117,6 @@ class Handler:
             await self._send(bot, event, "@{}: Here are all registered users:\n```\n{}\n```".format(event.msg.sender.username, '\n'.join(users)))
 
     async def delete_user(self, bot, event, cmd_parts):
-        if len(cmd_parts) < 1:
-            await self._reply_with_usage(bot, event, 'delete_user')
-            return
-
         username = cmd_parts.pop(0)
 
         # Validation
