@@ -84,7 +84,7 @@ class Handler:
                 await self._send(bot, event, "@{}: unknown command".format(event.msg.sender.username))
 
     async def _send(self, bot, event, message):
-        print("Sending message to {}: {}".format(event.msg.channel.name, message))
+        print("Sending message to {}: {}".format(event.msg.channel.name, repr(message)))
         await bot.chat.send(event.msg.channel.replyable_dict(), message)
 
     def _usage(self, cmd):
@@ -103,8 +103,11 @@ class Handler:
 
     async def list_users(self, bot, event, cmd_parts):
         r = Search(index="user").query("match_all").execute()
-        users = [str(hit['username']) for hit in r]
-        await self._send(bot, event, "@{}: Here are all registered users:\n```\n{}\n```".format(event.msg.sender.username, '\n'.join(users)))
+        users = ['{} :point_right: {}'.format(str(hit['username']), str(hit['name'])) for hit in r]
+        if len(users) == 0:
+            await self._send(bot, event, "@{}: There are no registered users :cry:".format(event.msg.sender.username))
+        else:
+            await self._send(bot, event, "@{}: Here are all registered users:\n```\n{}\n```".format(event.msg.sender.username, '\n'.join(users)))
 
     async def delete_user(self, bot, event, cmd_parts):
         if len(cmd_parts) < 1:
