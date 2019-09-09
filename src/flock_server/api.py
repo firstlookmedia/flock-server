@@ -61,6 +61,7 @@ def create_api_app(test_config=None):
     @app.route("/register", methods=["POST"])
     def register():
         username = request.form.get('username')
+        name = request.form.get('name', '')
 
         if not username:
             return api_error("You must provide a username")
@@ -71,13 +72,21 @@ def create_api_app(test_config=None):
             if c not in valid_chars:
                 return api_error("Usernames must only contain letters, numbers, '-', or '_'")
 
+        # Strip invalid characters from name
+        new_name = ''
+        invalid_chars = '`{}!@#$%^&*()_'
+        for c in name:
+            if c not in invalid_chars:
+                new_name += c
+        name = new_name
+
         # Is the user already registered?
         r = Search(index="user").query("match", username=username).execute()
         if len(r) != 0:
             return api_error("Your computer ({}) is already registered with this server".format(username))
 
         # Add user, and force a refresh of the index
-        user = User(username=username, token=secrets.token_hex(16))
+        user = User(username=username, name=name, token=secrets.token_hex(16))
         user.save()
         Index('user').refresh()
 

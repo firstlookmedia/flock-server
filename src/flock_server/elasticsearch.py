@@ -40,6 +40,7 @@ else:
 
 class User(Document):
     username = Text()
+    name = Text()
     token = Text()
     created_at = Date()
 
