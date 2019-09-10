@@ -30,6 +30,11 @@ def test_register_cannot_register_existing_username(client):
     assert res.status_code == 400
 
 
+def test_register_with_name(client):
+    res = client.post('/register', data={'username': "UUID1", "name": "Nick Fury"})
+    assert res.status_code == 200
+
+
 def test_ping_invalid_auth(client):
     res = client.get('/ping')
     assert res.status_code == 401
