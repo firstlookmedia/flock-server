@@ -50,3 +50,14 @@ class User(Document):
     def save(self, ** kwargs):
         self.created_at = datetime.now()
         return super(User, self).save(** kwargs)
+
+
+class Setting(Document):
+    key = Text()
+    value = Text()
+
+    class Index:
+        name = 'setting'
+
+    def save(self, ** kwargs):
+        return super(Setting, self).save(** kwargs)

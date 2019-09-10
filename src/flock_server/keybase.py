@@ -11,9 +11,6 @@ from elasticsearch_dsl import Index, Search
 from .elasticsearch import es, User
 
 
-#logging.basicConfig(level=logging.DEBUG)
-
-
 class Handler:
     def __init__(self):
         self.cmds = {
