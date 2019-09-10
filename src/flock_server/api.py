@@ -74,7 +74,7 @@ def create_api_app(test_config=None):
 
         # Strip invalid characters from name
         new_name = ''
-        invalid_chars = '`{}!@#$%^&*()_'
+        invalid_chars = '`{}!@#$%^&*_'
         for c in name:
             if c not in invalid_chars:
                 new_name += c
