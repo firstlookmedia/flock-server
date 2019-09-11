@@ -150,6 +150,7 @@ class Handler:
 
         # Delete the user
         user.delete()
+        Index('user').refresh()
         await self._send(bot, event, "@{}: User **{}** has been deleted.".format(event.msg.sender.username, username))
 
     async def rename_user(self, bot, event, args):
