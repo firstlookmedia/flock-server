@@ -12,7 +12,7 @@ The purpose of Flock server is to accept data from all of the agents (collected 
 
 How you configure Elasticsearch and Kibana (for data visualizations) are outside the scope of this project. However we do provide a pre-built Kibana dashboard ([coming soon](https://github.com/firstlookmedia/flock/issues/1)) for visualizations we find useful.
 
-The server also includes a [Keybase](https://keybase.io/) bot ([coming soon](https://github.com/firstlookmedia/flock/issues/2)) to send encrypted notifications to a Keybase team, and security staff send messages to the bot in order to administer the server.
+The server also includes a [Keybase](https://keybase.io/) bot to send encrypted notifications to a Keybase team, and security staff send messages to the bot in order to administer the server.
 
 ## Developer notes
 
@@ -29,6 +29,7 @@ Copy `keybase-sample.env` to `keybase.env`, and then edit it to include your dev
 To run a local server, you need Docker Compose. Then start all containers.
 
 ```sh
+docker-compose build
 docker-compose up
 ```
 
@@ -40,6 +41,7 @@ Here's how to run server tests:
 
 ```
 # start test containers
+docker-compose -f tests.yml build
 docker-compose -f tests.yml up -d
 docker exec -it flock_test-gateway_1 ./wait_for_es.sh
 
