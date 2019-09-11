@@ -49,7 +49,7 @@ class Handler:
             if event.msg.channel.members_type == pykeybasebot.MembersType.TEAM:
                 # Is the bot mentioned?
                 mentioned = False
-                if type(event.msg.content) is not pykeybasebot.OmitIfEmpty and event.msg.content.text.userMentions:
+                if type(event.msg.content) != pykeybasebot.OmitIfEmpty and event.msg.content.text.userMentions:
                     for user_mention in event.msg.content.text.userMentions:
                         if user_mention.text == os.environ.get("KEYBASE_USERNAME"):
                             mentioned = True
@@ -179,7 +179,10 @@ async def notification_checker(channel, bot):
         for keybase_notification in results:
             msg = keybase_notifications.format(keybase_notification.notification_type, keybase_notification.details)
             print("Sending notification: {}".format(repr(msg)))
-            await bot.chat.send(channel, msg)
+            try:
+                await bot.chat.send(channel, msg)
+            except TimeoutError:
+                pass
 
             keybase_notification.update(delivered=True)
             keybase_notification.save()

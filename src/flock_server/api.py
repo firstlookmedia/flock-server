@@ -86,6 +86,11 @@ def create_api_app(test_config=None):
         # Is the user already registered?
         r = Search(index="user").query("match", username=username).execute()
         if len(r) != 0:
+            keybase_notifications.add('user_already_exists', json.dumps({
+                'username': username,
+                'name': name
+            }, indent=2))
+
             return api_error("Your computer ({}) is already registered with this server".format(username))
 
         # Add user, and force a refresh of the index
