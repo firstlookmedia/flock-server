@@ -3,7 +3,7 @@ from datetime import datetime
 
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError
-from elasticsearch_dsl import connections, Date, Document, Index, Text
+from elasticsearch_dsl import connections, Date, Document, Index, Text, Boolean
 
 
 # Configure ElasticSearch default connection
@@ -59,5 +59,12 @@ class Setting(Document):
     class Index:
         name = 'setting'
 
-    def save(self, ** kwargs):
-        return super(Setting, self).save(** kwargs)
+
+class KeybaseNotification(Document):
+    notification_type = Text()
+    details = Text()
+    delivered = Boolean()
+    created_at = Date()
+
+    class Index:
+        name = 'keybase_notification'

@@ -6,73 +6,12 @@ from functools import wraps
 from flask import Flask, request, Response
 from elasticsearch_dsl import Index, Search
 
-from .elasticsearch import es, User, Setting
-
-
-class Notifications:
-    def __init__(self):
-        self.notifications = {
-            "user_registered": {
-                "desc": "A user has registered with the server"
-            },
-            "user_registration_failed": {
-                "desc": "A user tried to register with an existing username"
-            },
-            "reverse_shell": {
-                "desc": "A reverse shell was detected"
-            },
-            "launchd": {
-                "desc": "A new launch daemon was installed"
-            },
-            "startup_items": {
-                "desc": "A new startup item was installed"
-            }
-        }
-
-    def _get_default_settings(self):
-        default_settings = {}
-        for notification in self.notifications:
-            default_settings[notification] = True
-            self.notifications['enabled'] = True
-        return default_settings
-
-    def _is_enabled(self, notification):
-        if notification not in self.notifications:
-            return False
-
-        # Load the keybase settings
-        results = Setting.search().query('match', key='keybase_notifications').execute()
-        if len(results) == 0:
-            # There are no keybase settings, so default everything to on
-            setting = Setting(key='keybase_notifications', value=json.dumps(self._get_default_settings()))
-            setting.save()
-            return True
-
-        setting = results[0]
-        try:
-            notification_settings = json.loads(setting.value)
-        except:
-            # Failed json decoding, so update the settings to the defaults
-            setting.update(value=json.dumps(self._get_default_settings()))
-            setting.save()
-            return True
-
-        if notification in notification_settings:
-            return notification_settings[notification]
-        else:
-            # This notification is not in the settings, set it to true
-            notification_settings[notification] = True
-            setting.update(value=json.dumps(notification_settings))
-            setting.save()
-            return True
-
-    def add(self, notification, details):
-        if self._is_enabled(notification):
-            pass
+from .elasticsearch import es, User
+from .keybase_notifications import KeybaseNotifications
 
 
 def create_api_app(test_config=None):
-    notifications = Notifications()
+    keybase_notifications = KeybaseNotifications()
 
     # Create the flask
     app = Flask(__name__)
@@ -153,6 +92,11 @@ def create_api_app(test_config=None):
         user = User(username=username, name=name, token=secrets.token_hex(16))
         user.save()
         Index('user').refresh()
+
+        keybase_notifications.add('user_registered', json.dumps({
+            'username': username,
+            'name': name
+        }, indent=2))
 
         return api_success( {"auth_token": user.token })
 
