@@ -9,9 +9,9 @@ class KeybaseNotifications:
         self.notifications = {
             "user_registered": "A user has registered with the server",
             "user_already_exists": "A user tried to register with an existing username (they might be trying to re-setup their Flock Agent; if so delete the existing user so they can finish registering)",
-            "reverse_shell": "A reverse shell was detected",
-            "launchd": "A new launch daemon was installed",
-            "startup_items": "A new startup item was installed"
+            "reverse_shell": "A reverse shell was detected"
+            #"launchd": "A new launch daemon was installed",
+            #"startup_items": "A new startup item was installed"
         }
         self.warnings = ["reverse_shell"]
 
