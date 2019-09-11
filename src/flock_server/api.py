@@ -55,6 +55,15 @@ def create_api_app(test_config=None):
         return Response(json.dumps(success_obj), status=200, mimetype="application/json")
 
 
+    def get_name():
+        results = Search(index="user").query("match", username=request.authorization['username']).execute()
+        if len(results) == 1:
+            user = results[0]
+            return user.name
+        else:
+            return None
+
+
     @app.route("/es-test")
     def es_test():
         r = Search(index="user").query("match", username="user1").execute()
@@ -140,6 +149,16 @@ def create_api_app(test_config=None):
             # Convert 'unixTime' to '@timestamp'
             if 'unixTime' in doc:
                 doc['@timestamp'] = datetime.utcfromtimestamp(int(doc['unixTime'])).strftime('%Y-%m-%dT%H:%M:%S.000Z')
+
+            # Should we send a keybase notification?
+            if 'name' in doc:
+                # reverse_shell
+                if doc['name'] == 'reverse_shell':
+                    keybase_notifications.add('reverse_shell', json.dumps({
+                        'username': request.authorization['username'],
+                        'name': get_name()
+                        'osquery_result': doc
+                    }, indent=2))
 
             # Add data
             index = 'flock-{}'.format(datetime.now().strftime('%Y-%m-%d'))
