@@ -7,21 +7,11 @@ from .elasticsearch import es, User, Setting, KeybaseNotification
 class KeybaseNotifications:
     def __init__(self):
         self.notifications = {
-            "user_registered": {
-                "desc": "A user has registered with the server"
-            },
-            "user_registration_failed": {
-                "desc": "A user tried to register with an existing username"
-            },
-            "reverse_shell": {
-                "desc": "A reverse shell was detected"
-            },
-            "launchd": {
-                "desc": "A new launch daemon was installed"
-            },
-            "startup_items": {
-                "desc": "A new startup item was installed"
-            }
+            "user_registered": "A user has registered with the server",
+            "user_registration_failed": "A user tried to register with an existing username",
+            "reverse_shell": "A reverse shell was detected",
+            "launchd": "A new launch daemon was installed",
+            "startup_items": "A new startup item was installed"
         }
 
     def _get_default_settings(self):
@@ -70,3 +60,6 @@ class KeybaseNotifications:
                 created_at=datetime.now()
             )
             keybase_notification.save()
+
+    def format(self, notification, details):
+        return "{}:\n```\n{}\n```".format(self.notifications[notification], details)

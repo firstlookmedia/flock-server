@@ -8,7 +8,8 @@ from concurrent.futures import TimeoutError
 import pykeybasebot
 from elasticsearch_dsl import Index, Search
 
-from .elasticsearch import es, User
+from .elasticsearch import es, User, KeybaseNotification
+from .keybase_notifications import KeybaseNotifications
 
 
 class Handler:
@@ -168,6 +169,23 @@ class Handler:
 
         await self._send(bot, event, "@{}: Renamed user **{}** to **{}**".format(event.msg.sender.username, username, name))
 
+
+async def notification_checker(channel, bot):
+    keybase_notifications = KeybaseNotifications()
+    while True:
+        await asyncio.sleep(30)
+
+        results = KeybaseNotification.search().query('match', delivered=False).execute()
+        for keybase_notification in results:
+            msg = keybase_notifications.format(keybase_notification.notification_type, keybase_notification.details)
+            print("Sending notification: {}".format(repr(msg)))
+            await bot.chat.send(channel, msg)
+
+            keybase_notification.update(delivered=True)
+            keybase_notification.save()
+        Index('keybase_notification').refresh()
+
+
 async def start(bot, channel):
     # Wait for keybase to be available
     tries = 1
@@ -183,9 +201,7 @@ async def start(bot, channel):
     # Send welcome message and start listening
     await asyncio.gather(
         bot.chat.send(channel,
-            "Hello, friends! I'm a :robot_face:, and my process just woke up. Ask me for `help` for a list of commands.".format(
-                os.environ.get('KEYBASE_USERNAME')
-            )),
+            "Hello, friends! I'm a :robot_face:, and my process just woke up. Ask me for `help` for a list of commands."),
         bot.start({
             "local": False,
             "wallet": False,
@@ -193,7 +209,8 @@ async def start(bot, channel):
             "hide-exploding": False,
             "filter_channels": None,
             "filter_channel": channel
-        })
+        }),
+        notification_checker(channel, bot)
     )
 
 
