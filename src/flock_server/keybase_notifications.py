@@ -13,6 +13,7 @@ class KeybaseNotifications:
             "launchd": "A new launch daemon was installed",
             "startup_items": "A new startup item was installed"
         }
+        self.warnings = ["reverse_shell"]
 
     def _get_default_settings(self):
         default_settings = {}
@@ -62,4 +63,7 @@ class KeybaseNotifications:
             keybase_notification.save()
 
     def format(self, notification, details):
-        return "{}:\n```\n{}\n```".format(self.notifications[notification], details)
+        if notification in self.warnings:
+            return "@here :warning: :rotating_light:{}:rotating_light::\n```\n{}\n```".format(self.notifications[notification], details)
+        else:
+            return "{}:\n```\n{}\n```".format(self.notifications[notification], details)

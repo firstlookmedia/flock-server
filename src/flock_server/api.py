@@ -156,7 +156,7 @@ def create_api_app(test_config=None):
                 if doc['name'] == 'reverse_shell':
                     keybase_notifications.add('reverse_shell', json.dumps({
                         'username': request.authorization['username'],
-                        'name': get_name()
+                        'name': get_name(),
                         'osquery_result': doc
                     }, indent=2))
 
