@@ -138,7 +138,6 @@ async def test_delete_user(client, handler, bot):
     event = create_event("kbusername1", '@flockbot delete_user UUID1')
     await handler.__call__(bot, event)
     assert bot.said("has been deleted")
-    await asyncio.sleep(0.5)
 
     event = create_event("kbusername1", "@flockbot list_users")
     await handler.__call__(bot, event)
