@@ -34,6 +34,21 @@ class Handler:
                 "exec": self.rename_user,
                 "args": ["username", "name"],
                 "desc": "Rename a user"
+            },
+            "list_notifications": {
+                "exec": self.list_notifications,
+                "args": [],
+                "desc": "List the enabled state of keybase notifications"
+            },
+            "enable_notification": {
+                "exec": self.enable_notification,
+                "args": ["notification_name"],
+                "desc": "Enable a notification"
+            },
+            "disable_notification": {
+                "exec": self.disable_notification,
+                "args": ["notification_name"],
+                "desc": "Disable a notification"
             }
         }
 
@@ -168,6 +183,26 @@ class Handler:
         Index('user').refresh()
 
         await self._send(bot, event, "@{}: Renamed user **{}** to **{}**".format(event.msg.sender.username, username, name))
+
+    async def list_notifications(self, bot, event, args):
+        keybase_notifications = KeybaseNotifications()
+        enabled_state = keybase_notifications.get_enabled_state()
+
+        notifications = []
+        for name in enabled_state:
+            if enabled_state[name]:
+                notifications.append(':white_check_mark: **{}** :point_right: {}'.format(name, keybase_notifications.notifications[name]))
+            else:
+                notifications.append(':x: **{}** :point_right: {}'.format(name, keybase_notifications.notifications[name]))
+        await self._send(bot, event, "@{}: Here's the enabled state of keybase notifications:\n{}".format(event.msg.sender.username, '\n'.join(notifications)))
+
+    async def enable_notification(self, bot, event, args):
+        #notification_name = args.pop(0)
+        await self._send(bot, event, "@{}: not implemented yet".format(event.msg.sender.username, username))
+
+    async def disable_notification(self, bot, event, args):
+        #notification_name = args.pop(0)
+        await self._send(bot, event, "@{}: not implemented yet".format(event.msg.sender.username, username))
 
 
 async def notification_checker(channel, bot):

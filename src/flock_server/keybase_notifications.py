@@ -21,27 +21,49 @@ class KeybaseNotifications:
             default_settings[notification] = True
         return default_settings
 
+    def _load_settings(self):
+        results = Setting.search().query('match', key='keybase_notifications').execute()
+        if len(results) == 0:
+            # There are no keybase settings, so default everything to on
+            default_settings = self._get_default_settings()
+            setting = Setting(key='keybase_notifications', value=json.dumps(default_settings))
+            setting.save()
+            return default_settings
+        else:
+            setting = results[0]
+            try:
+                notification_settings = json.loads(setting.value)
+
+                # Make sure they have all of the right notifications
+                update = False
+                for notification in self.notifications:
+                    if notification not in notification_settings:
+                        notification_settings[notification] = True
+                        update = True
+                to_del = []
+                for notification in notification_settings:
+                    if notification not in self.notifications:
+                        to_del.append(notification)
+                        update = True
+                for notification in to_del:
+                    del notification_settings[notification]
+                if update:
+                    setting.update(value=json.dumps(notification_settings))
+                    setting.save()
+
+                return notification_settings
+            except:
+                # Failed json decoding, so update the settings to the defaults
+                default_settings = self._get_default_settings()
+                setting.update(value=json.dumps(default_settings))
+                setting.save()
+                return default_settings
+
     def _is_enabled(self, notification):
         if notification not in self.notifications:
             return False
 
-        # Load the keybase settings
-        results = Setting.search().query('match', key='keybase_notifications').execute()
-        if len(results) == 0:
-            # There are no keybase settings, so default everything to on
-            setting = Setting(key='keybase_notifications', value=json.dumps(self._get_default_settings()))
-            setting.save()
-            return True
-
-        setting = results[0]
-        try:
-            notification_settings = json.loads(setting.value)
-        except:
-            # Failed json decoding, so update the settings to the defaults
-            setting.update(value=json.dumps(self._get_default_settings()))
-            setting.save()
-            return True
-
+        notification_settings = self._load_settings()
         if notification in notification_settings:
             return notification_settings[notification]
         else:
@@ -50,6 +72,9 @@ class KeybaseNotifications:
             setting.update(value=json.dumps(notification_settings))
             setting.save()
             return True
+
+    def get_enabled_state(self):
+        return self._load_settings()
 
     def add(self, notification, details):
         if self._is_enabled(notification):
