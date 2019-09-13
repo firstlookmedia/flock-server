@@ -40,6 +40,13 @@ async def test_not_admin(handler, bot):
 
 
 @pytest.mark.asyncio
+async def test_ignore_self(handler, bot):
+    event = create_event("flockbot", "@flockbot help")
+    await handler.__call__(bot, event)
+    assert bot.stayed_silent()
+
+
+@pytest.mark.asyncio
 async def test_help(handler, bot):
     event = create_event("kbusername1", "@flockbot help")
     await handler.__call__(bot, event)

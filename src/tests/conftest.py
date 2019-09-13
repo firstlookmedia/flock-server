@@ -27,6 +27,9 @@ class BotStub:
     def didnt_say(self, substring):
         return substring not in self.chat.sent_message
 
+    def stayed_silent(self):
+        return self.chat.sent_message == None
+
 
 @pytest.fixture
 def app():
