@@ -1,8 +1,9 @@
 import os
+import json
 import pytest
 
 from elasticsearch_dsl import Index, Search
-from flock_server import create_api_app, KeybaseHandler
+from flock_server import create_api_app, KeybaseHandler, KeybaseNotifications, Setting
 
 
 class BotStub:
@@ -29,6 +30,10 @@ class BotStub:
 
     def stayed_silent(self):
         return self.chat.sent_message == None
+
+    @property
+    def message(self):
+        return self.chat.sent_message
 
 
 @pytest.fixture
@@ -72,3 +77,19 @@ def bot():
     """Returns a bot stub"""
     bot = BotStub()
     return bot
+
+
+@pytest.fixture
+def keybase_notifications():
+    """Returns a KeybaseNotifications object"""
+    keybase_notifications = KeybaseNotifications()
+
+    # Reset notifications to default
+    results = Setting.search().query('match', key='keybase_notifications').execute()
+    if len(results) > 0:
+        setting = results[0]
+        setting.update(value=json.dumps(keybase_notifications._get_default_settings()))
+        setting.save()
+        Index('setting').refresh()
+
+    return keybase_notifications

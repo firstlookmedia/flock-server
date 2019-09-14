@@ -5,4 +5,4 @@ from .elasticsearch import User, Setting, elasticsearch_url
 from .api import create_api_app
 
 # Keybase bot
-from .keybase import start_keybase_bot, Handler as KeybaseHandler
+from .keybase import start_keybase_bot, Handler as KeybaseHandler, KeybaseNotifications

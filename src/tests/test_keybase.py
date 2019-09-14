@@ -150,3 +150,14 @@ async def test_delete_user(client, handler, bot):
     await handler.__call__(bot, event)
     assert bot.said("There are no registered users")
     assert bot.didnt_say("Nick Fury")
+
+
+@pytest.mark.asyncio
+async def test_list_notifications(keybase_notifications, handler, bot):
+    event = create_event("kbusername1", "@flockbot list_notifications")
+    await handler.__call__(bot, event)
+    assert bot.said("user_registered")
+    assert bot.said("A user has registered with the server")
+    # Make all settings are enabled
+    for line in bot.message.split('\n')[1:]:
+        assert line.startswith(':white_check_mark:')
