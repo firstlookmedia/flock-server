@@ -40,6 +40,13 @@ async def test_not_admin(handler, bot):
 
 
 @pytest.mark.asyncio
+async def test_ignore_self(handler, bot):
+    event = create_event("flockbot", "@flockbot help")
+    await handler.__call__(bot, event)
+    assert bot.stayed_silent()
+
+
+@pytest.mark.asyncio
 async def test_help(handler, bot):
     event = create_event("kbusername1", "@flockbot help")
     await handler.__call__(bot, event)
@@ -143,3 +150,68 @@ async def test_delete_user(client, handler, bot):
     await handler.__call__(bot, event)
     assert bot.said("There are no registered users")
     assert bot.didnt_say("Nick Fury")
+
+
+@pytest.mark.asyncio
+async def test_list_notifications(keybase_notifications, handler, bot):
+    event = create_event("kbusername1", "@flockbot list_notifications")
+    await handler.__call__(bot, event)
+    assert bot.said("user_registered")
+    assert bot.said("A user has registered with the server")
+    # Make all settings are enabled
+    for line in bot.message.split('\n')[1:]:
+        assert line.startswith(':white_check_mark:')
+
+
+@pytest.mark.asyncio
+async def test_enable_notification_invalid(keybase_notifications, handler, bot):
+    event = create_event("kbusername1", "@flockbot enable_notification foobar")
+    await handler.__call__(bot, event)
+    assert bot.said("That notification does not exist")
+
+
+@pytest.mark.asyncio
+async def test_enable_notification(keybase_notifications, handler, bot):
+    event = create_event("kbusername1", "@flockbot enable_notification user_registered")
+    await handler.__call__(bot, event)
+    assert bot.said("Notification already enabled")
+
+    event = create_event("kbusername1", "@flockbot disable_notification user_registered")
+    await handler.__call__(bot, event)
+    assert bot.said("Notification disabled")
+
+    event = create_event("kbusername1", "@flockbot list_notifications")
+    await handler.__call__(bot, event)
+    assert bot.said(":x: **user_registered**")
+
+    event = create_event("kbusername1", "@flockbot enable_notification user_registered")
+    await handler.__call__(bot, event)
+    assert bot.said("Notification enabled")
+
+    event = create_event("kbusername1", "@flockbot list_notifications")
+    await handler.__call__(bot, event)
+    assert bot.said(":white_check_mark: **user_registered**")
+    assert bot.said(":white_check_mark: **user_already_exists**")
+
+
+@pytest.mark.asyncio
+async def test_disable_notification_invalid(keybase_notifications, handler, bot):
+    event = create_event("kbusername1", "@flockbot disable_notification foobar")
+    await handler.__call__(bot, event)
+    assert bot.said("That notification does not exist")
+
+
+@pytest.mark.asyncio
+async def test_disable_notification(keybase_notifications, handler, bot):
+    event = create_event("kbusername1", "@flockbot disable_notification user_registered")
+    await handler.__call__(bot, event)
+    assert bot.said("Notification disabled")
+
+    event = create_event("kbusername1", "@flockbot disable_notification user_registered")
+    await handler.__call__(bot, event)
+    assert bot.said("Notification already disabled")
+
+    event = create_event("kbusername1", "@flockbot list_notifications")
+    await handler.__call__(bot, event)
+    assert bot.said(":x: **user_registered**")
+    assert bot.said(":white_check_mark: **user_already_exists**")

@@ -7,10 +7,13 @@ from flask import Flask, request, Response
 from elasticsearch_dsl import Index, Search
 
 from .elasticsearch import es, User
+from .keybase_notifications import KeybaseNotifications
 
 
 def create_api_app(test_config=None):
-    # Flask
+    keybase_notifications = KeybaseNotifications()
+
+    # Create the flask
     app = Flask(__name__)
     if test_config:
         app.config.update(test_config)
@@ -52,6 +55,15 @@ def create_api_app(test_config=None):
         return Response(json.dumps(success_obj), status=200, mimetype="application/json")
 
 
+    def get_name():
+        results = Search(index="user").query("match", username=request.authorization['username']).execute()
+        if len(results) == 1:
+            user = results[0]
+            return user.name
+        else:
+            return None
+
+
     @app.route("/es-test")
     def es_test():
         r = Search(index="user").query("match", username="user1").execute()
@@ -83,12 +95,22 @@ def create_api_app(test_config=None):
         # Is the user already registered?
         r = Search(index="user").query("match", username=username).execute()
         if len(r) != 0:
+            keybase_notifications.add('user_already_exists', json.dumps({
+                'username': username,
+                'name': name
+            }, indent=2))
+
             return api_error("Your computer ({}) is already registered with this server".format(username))
 
         # Add user, and force a refresh of the index
         user = User(username=username, name=name, token=secrets.token_hex(16))
         user.save()
         Index('user').refresh()
+
+        keybase_notifications.add('user_registered', json.dumps({
+            'username': username,
+            'name': name
+        }, indent=2))
 
         return api_success( {"auth_token": user.token })
 
@@ -127,6 +149,16 @@ def create_api_app(test_config=None):
             # Convert 'unixTime' to '@timestamp'
             if 'unixTime' in doc:
                 doc['@timestamp'] = datetime.utcfromtimestamp(int(doc['unixTime'])).strftime('%Y-%m-%dT%H:%M:%S.000Z')
+
+            # Should we send a keybase notification?
+            if 'name' in doc:
+                # reverse_shell
+                if doc['name'] == 'reverse_shell':
+                    keybase_notifications.add('reverse_shell', json.dumps({
+                        'username': request.authorization['username'],
+                        'name': get_name(),
+                        'osquery_result': doc
+                    }, indent=2))
 
             # Add data
             index = 'flock-{}'.format(datetime.now().strftime('%Y-%m-%d'))

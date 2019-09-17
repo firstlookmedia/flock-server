@@ -8,14 +8,13 @@ from concurrent.futures import TimeoutError
 import pykeybasebot
 from elasticsearch_dsl import Index, Search
 
-from .elasticsearch import es, User
-
-
-#logging.basicConfig(level=logging.DEBUG)
+from .elasticsearch import es, User, KeybaseNotification
+from .keybase_notifications import KeybaseNotifications
 
 
 class Handler:
     def __init__(self):
+        self.keybase_notifications = KeybaseNotifications()
         self.cmds = {
             "help": {
                 "exec": self.help,
@@ -36,6 +35,21 @@ class Handler:
                 "exec": self.rename_user,
                 "args": ["username", "name"],
                 "desc": "Rename a user"
+            },
+            "list_notifications": {
+                "exec": self.list_notifications,
+                "args": [],
+                "desc": "List the enabled state of keybase notifications"
+            },
+            "enable_notification": {
+                "exec": self.enable_notification,
+                "args": ["notification_name"],
+                "desc": "Enable a notification"
+            },
+            "disable_notification": {
+                "exec": self.disable_notification,
+                "args": ["notification_name"],
+                "desc": "Disable a notification"
             }
         }
 
@@ -51,7 +65,7 @@ class Handler:
             if event.msg.channel.members_type == pykeybasebot.MembersType.TEAM:
                 # Is the bot mentioned?
                 mentioned = False
-                if type(event.msg.content) is not pykeybasebot.OmitIfEmpty and event.msg.content.text.userMentions:
+                if type(event.msg.content) != pykeybasebot.OmitIfEmpty and event.msg.content.text.userMentions:
                     for user_mention in event.msg.content.text.userMentions:
                         if user_mention.text == os.environ.get("KEYBASE_USERNAME"):
                             mentioned = True
@@ -132,6 +146,12 @@ class Handler:
         user = results[0]
         return user
 
+    async def _validate_notification(self, bot, event, notification_name):
+        if notification_name not in self.keybase_notifications.notifications:
+            await self._send(bot, event, "@{}: That notification does not exist :zany_face:".format(event.msg.sender.username))
+            return False
+        return True
+
     async def help(self, bot, event, args):
         formatted = [self._usage(cmd) for cmd in self.cmds]
         await self._send(bot, event, "@{}: These are the commands I know:\n{}".format(event.msg.sender.username, '\n'.join(formatted)))
@@ -171,6 +191,56 @@ class Handler:
 
         await self._send(bot, event, "@{}: Renamed user **{}** to **{}**".format(event.msg.sender.username, username, name))
 
+    async def list_notifications(self, bot, event, args):
+        enabled_state = self.keybase_notifications.get_enabled_state()
+        notifications = []
+        for name in enabled_state:
+            if enabled_state[name]:
+                notifications.append(':white_check_mark: **{}** :point_right: {}'.format(name, self.keybase_notifications.notifications[name]))
+            else:
+                notifications.append(':x: **{}** :point_right: {}'.format(name, self.keybase_notifications.notifications[name]))
+        await self._send(bot, event, "@{}: Here's the enabled state of keybase notifications:\n{}".format(event.msg.sender.username, '\n'.join(notifications)))
+
+    async def enable_notification(self, bot, event, args):
+        notification_name = args.pop(0)
+        if await self._validate_notification(bot, event, notification_name):
+            enabled_state = self.keybase_notifications.get_enabled_state()
+            if enabled_state[notification_name]:
+                await self._send(bot, event, "@{}: Notification already enabled".format(event.msg.sender.username))
+            else:
+                self.keybase_notifications.enable(notification_name)
+                await self._send(bot, event, "@{}: Notification enabled".format(event.msg.sender.username))
+
+    async def disable_notification(self, bot, event, args):
+        notification_name = args.pop(0)
+        if await self._validate_notification(bot, event, notification_name):
+            enabled_state = self.keybase_notifications.get_enabled_state()
+            if not enabled_state[notification_name]:
+                await self._send(bot, event, "@{}: Notification already disabled".format(event.msg.sender.username))
+            else:
+                self.keybase_notifications.disable(notification_name)
+                await self._send(bot, event, "@{}: Notification disabled".format(event.msg.sender.username))
+
+
+async def notification_checker(channel, bot):
+    keybase_notifications = KeybaseNotifications()
+    while True:
+        await asyncio.sleep(30)
+
+        results = KeybaseNotification.search().query('match', delivered=False).execute()
+        for keybase_notification in results:
+            msg = keybase_notifications.format(keybase_notification.notification_type, keybase_notification.details)
+            print("Sending notification: {}".format(repr(msg)))
+            try:
+                await bot.chat.send(channel, msg)
+            except TimeoutError:
+                pass
+
+            keybase_notification.update(delivered=True)
+            keybase_notification.save()
+        Index('keybase_notification').refresh()
+
+
 async def start(bot, channel):
     # Wait for keybase to be available
     tries = 1
@@ -186,9 +256,7 @@ async def start(bot, channel):
     # Send welcome message and start listening
     await asyncio.gather(
         bot.chat.send(channel,
-            "Hello, friends! I'm a :robot_face:, and my process just woke up. Ask me for `help` for a list of commands.".format(
-                os.environ.get('KEYBASE_USERNAME')
-            )),
+            "Hello, friends! I'm a :robot_face:, and my process just woke up. Ask me for `help` for a list of commands."),
         bot.start({
             "local": False,
             "wallet": False,
@@ -196,7 +264,8 @@ async def start(bot, channel):
             "hide-exploding": False,
             "filter_channels": None,
             "filter_channel": channel
-        })
+        }),
+        notification_checker(channel, bot)
     )
 
 
