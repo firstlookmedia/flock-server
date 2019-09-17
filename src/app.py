@@ -2,7 +2,7 @@ import time
 import requests
 import os
 
-from flock_server import User, Setting, create_api_app, start_keybase_bot, elasticsearch_url
+from flock_server import User, Setting, KeybaseNotification, create_api_app, start_keybase_bot, elasticsearch_url
 
 
 if __name__ == '__main__':
@@ -27,6 +27,7 @@ if __name__ == '__main__':
     print('Initializing user model')
     User.init()
     Setting.init()
+    KeybaseNotification.init()
 
     if os.environ.get('FLOCK_KEYBASE') == "1":
         # Start keybase bot
