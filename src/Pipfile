@@ -12,7 +12,7 @@ flask = "*"
 elasticsearch = "*"
 elasticsearch-dsl = "*"
 requests = "*"
-pykeybasebot = "==0.1.1"
+pykeybasebot = "*"
 
 [requires]
 python_version = "3.7"
