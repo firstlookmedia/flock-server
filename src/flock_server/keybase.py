@@ -14,6 +14,7 @@ from .keybase_notifications import KeybaseNotifications
 
 class Handler:
     def __init__(self):
+        self.keybase_notifications = KeybaseNotifications()
         self.cmds = {
             "help": {
                 "exec": self.help,
@@ -145,6 +146,12 @@ class Handler:
         user = results[0]
         return user
 
+    async def _validate_notification(self, bot, event, notification_name):
+        if notification_name not in self.keybase_notifications.notifications:
+            await self._send(bot, event, "@{}: That notification does not exist :zany_face:".format(event.msg.sender.username))
+            return False
+        return True
+
     async def help(self, bot, event, args):
         formatted = [self._usage(cmd) for cmd in self.cmds]
         await self._send(bot, event, "@{}: These are the commands I know:\n{}".format(event.msg.sender.username, '\n'.join(formatted)))
@@ -185,24 +192,34 @@ class Handler:
         await self._send(bot, event, "@{}: Renamed user **{}** to **{}**".format(event.msg.sender.username, username, name))
 
     async def list_notifications(self, bot, event, args):
-        keybase_notifications = KeybaseNotifications()
-        enabled_state = keybase_notifications.get_enabled_state()
-
+        enabled_state = self.keybase_notifications.get_enabled_state()
         notifications = []
         for name in enabled_state:
             if enabled_state[name]:
-                notifications.append(':white_check_mark: **{}** :point_right: {}'.format(name, keybase_notifications.notifications[name]))
+                notifications.append(':white_check_mark: **{}** :point_right: {}'.format(name, self.keybase_notifications.notifications[name]))
             else:
-                notifications.append(':x: **{}** :point_right: {}'.format(name, keybase_notifications.notifications[name]))
+                notifications.append(':x: **{}** :point_right: {}'.format(name, self.keybase_notifications.notifications[name]))
         await self._send(bot, event, "@{}: Here's the enabled state of keybase notifications:\n{}".format(event.msg.sender.username, '\n'.join(notifications)))
 
     async def enable_notification(self, bot, event, args):
-        #notification_name = args.pop(0)
-        await self._send(bot, event, "@{}: not implemented yet".format(event.msg.sender.username, username))
+        notification_name = args.pop(0)
+        if await self._validate_notification(bot, event, notification_name):
+            enabled_state = self.keybase_notifications.get_enabled_state()
+            if enabled_state[notification_name]:
+                await self._send(bot, event, "@{}: Notification already enabled".format(event.msg.sender.username))
+            else:
+                self.keybase_notifications.enable(notification_name)
+                await self._send(bot, event, "@{}: Notification enabled".format(event.msg.sender.username))
 
     async def disable_notification(self, bot, event, args):
-        #notification_name = args.pop(0)
-        await self._send(bot, event, "@{}: not implemented yet".format(event.msg.sender.username, username))
+        notification_name = args.pop(0)
+        if await self._validate_notification(bot, event, notification_name):
+            enabled_state = self.keybase_notifications.get_enabled_state()
+            if not enabled_state[notification_name]:
+                await self._send(bot, event, "@{}: Notification already disabled".format(event.msg.sender.username))
+            else:
+                self.keybase_notifications.disable(notification_name)
+                await self._send(bot, event, "@{}: Notification disabled".format(event.msg.sender.username))
 
 
 async def notification_checker(channel, bot):

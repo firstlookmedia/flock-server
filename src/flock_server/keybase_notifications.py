@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from elasticsearch_dsl import Index
 
 from .elasticsearch import es, User, Setting, KeybaseNotification
 
@@ -21,43 +22,58 @@ class KeybaseNotifications:
             default_settings[notification] = True
         return default_settings
 
-    def _load_settings(self):
+    def _get_setting(self):
+        # We must refresh the index before loading the settings for tests to pass -- this shouldn't be
+        # necessary because _save_settings() refreshes it, but since the setting index is so small it
+        # doesn't hurt
+        Index('setting').refresh()
+
         results = Setting.search().query('match', key='keybase_notifications').execute()
         if len(results) == 0:
             # There are no keybase settings, so default everything to on
             default_settings = self._get_default_settings()
             setting = Setting(key='keybase_notifications', value=json.dumps(default_settings))
             setting.save()
-            return default_settings
-        else:
-            setting = results[0]
-            try:
-                notification_settings = json.loads(setting.value)
+            return setting
 
-                # Make sure they have all of the right notifications
-                update = False
-                for notification in self.notifications:
-                    if notification not in notification_settings:
-                        notification_settings[notification] = True
-                        update = True
-                to_del = []
-                for notification in notification_settings:
-                    if notification not in self.notifications:
-                        to_del.append(notification)
-                        update = True
-                for notification in to_del:
-                    del notification_settings[notification]
-                if update:
-                    setting.update(value=json.dumps(notification_settings))
-                    setting.save()
+        setting = results[0]
+        return setting
 
-                return notification_settings
-            except:
-                # Failed json decoding, so update the settings to the defaults
-                default_settings = self._get_default_settings()
-                setting.update(value=json.dumps(default_settings))
+    def _load_settings(self):
+        setting = self._get_setting()
+        try:
+            notification_settings = json.loads(setting.value)
+
+            # Make sure they have all of the right notifications
+            update = False
+            for notification in self.notifications:
+                if notification not in notification_settings:
+                    notification_settings[notification] = True
+                    update = True
+            to_del = []
+            for notification in notification_settings:
+                if notification not in self.notifications:
+                    to_del.append(notification)
+                    update = True
+            for notification in to_del:
+                del notification_settings[notification]
+            if update:
+                setting.update(value=json.dumps(notification_settings))
                 setting.save()
-                return default_settings
+
+            return notification_settings
+        except:
+            # Failed json decoding, so update the settings to the defaults
+            default_settings = self._get_default_settings()
+            setting.update(value=json.dumps(default_settings))
+            setting.save()
+            return default_settings
+
+    def _save_settings(self, notification_settings):
+        setting = self._get_setting()
+        setting.update(value=json.dumps(notification_settings))
+        setting.save()
+        Index('setting').refresh()
 
     def _is_enabled(self, notification):
         if notification not in self.notifications:
@@ -69,12 +85,25 @@ class KeybaseNotifications:
         else:
             # This notification is not in the settings, set it to true
             notification_settings[notification] = True
-            setting.update(value=json.dumps(notification_settings))
-            setting.save()
+            self._save_settings(notification_settings)
             return True
 
     def get_enabled_state(self):
         return self._load_settings()
+
+    def enable(self, notification):
+        notification_settings = self._load_settings()
+        if notification in notification_settings:
+            if not notification_settings[notification]:
+                notification_settings[notification] = True
+                self._save_settings(notification_settings)
+
+    def disable(self, notification):
+        notification_settings = self._load_settings()
+        if notification in notification_settings:
+            if notification_settings[notification]:
+                notification_settings[notification] = False
+                self._save_settings(notification_settings)
 
     def add(self, notification, details):
         if self._is_enabled(notification):

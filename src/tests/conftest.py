@@ -82,14 +82,10 @@ def bot():
 @pytest.fixture
 def keybase_notifications():
     """Returns a KeybaseNotifications object"""
+
+    # Delete keybase notification setting
+    Search(index='setting').query('match', key='keybase_notifications').delete()
+    Index('setting').refresh()
+
     keybase_notifications = KeybaseNotifications()
-
-    # Reset notifications to default
-    results = Setting.search().query('match', key='keybase_notifications').execute()
-    if len(results) > 0:
-        setting = results[0]
-        setting.update(value=json.dumps(keybase_notifications._get_default_settings()))
-        setting.save()
-        Index('setting').refresh()
-
     return keybase_notifications
