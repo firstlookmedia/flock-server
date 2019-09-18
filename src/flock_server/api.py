@@ -144,6 +144,10 @@ def create_api_app(test_config=None):
             if ('hostIdentifier' not in doc) or (request.authorization['username'] != doc['hostIdentifier']):
                 return api_error("Item {} does not contain the correct hostIdentifier".format(i))
 
+        # Load the user
+        results = Search(index="user").query("match", username=request.authorization['username']).execute()
+        user = results[0]
+
         # Add data to ElasticSearch
         for doc in docs:
             # Convert 'unixTime' to '@timestamp'
@@ -159,6 +163,9 @@ def create_api_app(test_config=None):
                         'name': get_name(),
                         'osquery_result': doc
                     }, indent=2))
+
+            # Tag with user's name
+            doc['user_name'] = user.name
 
             # Add data
             index = 'flock-{}'.format(datetime.now().strftime('%Y-%m-%d'))
