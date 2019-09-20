@@ -62,18 +62,18 @@ class Handler:
 
         # Only listen for remote chat messages
         if event.type == pykeybasebot.EventType.CHAT and event.source == pykeybasebot.Source.REMOTE:
-            if event.msg.channel.members_type == pykeybasebot.MembersType.TEAM:
+            if event.msg.channel.members_type == 'team':
                 # Is the bot mentioned?
                 mentioned = False
-                if type(event.msg.content) != pykeybasebot.OmitIfEmpty and event.msg.content.text.userMentions:
-                    for user_mention in event.msg.content.text.userMentions:
+                if event.msg.content.text.user_mentions:
+                    for user_mention in event.msg.content.text.user_mentions:
                         if user_mention.text == os.environ.get("KEYBASE_USERNAME"):
                             mentioned = True
                             break
                 if not mentioned:
                     return
             else:
-                if event.msg.channel.members_type == pykeybasebot.MembersType.IMPTEAMNATIVE:
+                if event.msg.channel.members_type == 'impteamnative':
                     # This is a direct message
                     pass
                 else:
@@ -84,9 +84,12 @@ class Handler:
             keybase_admins = os.environ.get('KEYBASE_ADMIN_USERNAMES').split(',')
             if event.msg.sender.username not in keybase_admins:
                 print("{} tried talking to me, but that user is not an admin".format(event.msg.sender.username))
-                await bot.chat.send(event.msg.channel.replyable_dict(),
-                    "Sorry @{}. I'm not configured to talk to you.".format(
-                        event.msg.sender.username))
+                try:
+                    await bot.chat.send(event.msg.channel,
+                        "Sorry @{}. I'm not configured to talk to you.".format(
+                            event.msg.sender.username))
+                except TimeoutError:
+                    pass
                 return
 
             # Parse the command
@@ -113,7 +116,10 @@ class Handler:
 
     async def _send(self, bot, event, message):
         print("Sending message to {}: {}".format(event.msg.channel.name, repr(message)))
-        await bot.chat.send(event.msg.channel.replyable_dict(), message)
+        try:
+            await bot.chat.send(event.msg.channel, message)
+        except TimeoutError:
+            pass
 
     def _usage(self, cmd):
         if len(self.cmds[cmd]['args']) > 0:
@@ -253,18 +259,16 @@ async def start(bot, channel):
         except TimeoutError:
             tries += 1
 
-    # Send welcome message and start listening
+    # Send welcome message
+    try:
+        await bot.chat.send(channel,
+            "Hello, friends! I'm a :robot_face:, and my process just woke up. Ask me for `help` for a list of commands.")
+    except TimeoutError:
+        pass
+
+    # Start listening
     await asyncio.gather(
-        bot.chat.send(channel,
-            "Hello, friends! I'm a :robot_face:, and my process just woke up. Ask me for `help` for a list of commands."),
-        bot.start({
-            "local": False,
-            "wallet": False,
-            "dev": False,
-            "hide-exploding": False,
-            "filter_channels": None,
-            "filter_channel": channel
-        }),
+        bot.start({ "filter_channel": channel }),
         notification_checker(channel, bot)
     )
 
@@ -299,11 +303,11 @@ def start_keybase_bot():
         paperkey=os.environ.get("KEYBASE_PAPERKEY"),
         handler=Handler()
     )
-    channel = {
-        "name": os.environ.get("KEYBASE_TEAM"),
-        "topic_name": os.environ.get("KEYBASE_CHANNEL"),
-        "members_type": "team"
-    }
+    channel = pykeybasebot.types.chat1.ChatChannel(
+        name=os.environ.get("KEYBASE_TEAM"),
+        topic_name=os.environ.get("KEYBASE_CHANNEL"),
+        members_type="team"
+    )
 
     # Start the bot
     asyncio.run(start(bot, channel))
