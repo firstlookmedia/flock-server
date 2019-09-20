@@ -16,19 +16,46 @@ def create_event(sender_username, body, members_type=None):
     topic_name = "flock_notifications_channel"
 
     if members_type:
-        members_type = pykeybasebot.MembersType.TEAM # team
+        members_type = 'team'
     else:
-        members_type = pykeybasebot.MembersType.IMPTEAMNATIVE # direct chat
-    channel = pykeybasebot.Channel(channel_name, False, members_type, pykeybasebot.TopicType.CHAT, topic_name=topic_name)
+        members_type = 'impteamnative' # direct chat
 
-    sender = pykeybasebot.Sender("uid", sender_username, "device_id", "device_name")
-
-    content_text = pykeybasebot.ContentText(body, None, user_mentions, [])
-    content = pykeybasebot.Content(pykeybasebot.ContentType.TEXT, text=content_text)
-
-    msg = pykeybasebot.Message(123, channel, sender, int(time.time()), int(time.time()*1000), content)
-
-    event = pykeybasebot.KbEvent(pykeybasebot.EventType.CHAT, pykeybasebot.Source.REMOTE, msg=msg)
+    channel = pykeybasebot.types.chat1.ChatChannel(
+        name=channel_name,
+        public=False,
+        members_type=members_type,
+        topic_type='chat',
+        topic_name=topic_name
+    )
+    sender = pykeybasebot.types.chat1.MsgSender(
+        uid="uid",
+        device_id="device_id",
+        username=sender_username,
+        device_name="device_name"
+    )
+    content_text = pykeybasebot.types.chat1.MessageText(
+        body=body,
+        user_mentions=user_mentions
+    )
+    content = pykeybasebot.types.chat1.MsgContent(
+        type_name='text',
+        text=content_text
+    )
+    msg = pykeybasebot.types.chat1.MsgSummary(
+        id=123,
+        conv_id='conv_id',
+        channel=channel,
+        sender=sender,
+        sent_at=int(time.time()),
+        sent_at_ms=int(time.time()*1000),
+        content=content,
+        unread=True
+    )
+    event = pykeybasebot.KbEvent(
+        type=pykeybasebot.EventType.CHAT,
+        source=pykeybasebot.Source.REMOTE,
+        msg=msg
+    )
     return event
 
 

@@ -25,9 +25,18 @@ if __name__ == '__main__':
 
     # Initialize models
     print('Initializing user model')
-    User.init()
-    Setting.init()
-    KeybaseNotification.init()
+    try:
+        User.init()
+    except:
+        pass
+    try:
+        Setting.init()
+    except:
+        pass
+    try:
+        KeybaseNotification.init()
+    except:
+        pass
 
     if os.environ.get('FLOCK_KEYBASE') == "1":
         # Start keybase bot
