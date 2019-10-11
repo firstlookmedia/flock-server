@@ -16,45 +16,39 @@ def create_event(sender_username, body, members_type=None):
     topic_name = "flock_notifications_channel"
 
     if members_type:
-        members_type = 'team'
+        members_type = "team"
     else:
-        members_type = 'impteamnative' # direct chat
+        members_type = "impteamnative"  # direct chat
 
     channel = pykeybasebot.types.chat1.ChatChannel(
         name=channel_name,
         public=False,
         members_type=members_type,
-        topic_type='chat',
-        topic_name=topic_name
+        topic_type="chat",
+        topic_name=topic_name,
     )
     sender = pykeybasebot.types.chat1.MsgSender(
         uid="uid",
         device_id="device_id",
         username=sender_username,
-        device_name="device_name"
+        device_name="device_name",
     )
     content_text = pykeybasebot.types.chat1.MessageText(
-        body=body,
-        user_mentions=user_mentions
+        body=body, user_mentions=user_mentions
     )
-    content = pykeybasebot.types.chat1.MsgContent(
-        type_name='text',
-        text=content_text
-    )
+    content = pykeybasebot.types.chat1.MsgContent(type_name="text", text=content_text)
     msg = pykeybasebot.types.chat1.MsgSummary(
         id=123,
-        conv_id='conv_id',
+        conv_id="conv_id",
         channel=channel,
         sender=sender,
         sent_at=int(time.time()),
-        sent_at_ms=int(time.time()*1000),
+        sent_at_ms=int(time.time() * 1000),
         content=content,
-        unread=True
+        unread=True,
     )
     event = pykeybasebot.KbEvent(
-        type=pykeybasebot.EventType.CHAT,
-        source=pykeybasebot.Source.REMOTE,
-        msg=msg
+        type=pykeybasebot.EventType.CHAT, source=pykeybasebot.Source.REMOTE, msg=msg
     )
     return event
 
@@ -89,10 +83,10 @@ async def test_list_users_empty(client, handler, bot):
 
 @pytest.mark.asyncio
 async def test_list_users_with_users(client, handler, bot):
-    res = client.post('/register', data={'username': "UUID1", "name": "Nick Fury"})
+    res = client.post("/register", data={"username": "UUID1", "name": "Nick Fury"})
     assert res.status_code == 200
 
-    res = client.post('/register', data={'username': "UUID2", "name": "Jessica Jones"})
+    res = client.post("/register", data={"username": "UUID2", "name": "Jessica Jones"})
     assert res.status_code == 200
 
     event = create_event("kbusername1", "@flockbot list_users")
@@ -106,10 +100,12 @@ async def test_list_users_with_users(client, handler, bot):
 
 @pytest.mark.asyncio
 async def test_rename_user_invalid_username(client, handler, bot):
-    res = client.post('/register', data={'username': "UUID1", "name": "Nick Fury"})
+    res = client.post("/register", data={"username": "UUID1", "name": "Nick Fury"})
     assert res.status_code == 200
 
-    event = create_event("kbusername1", '@flockbot rename_user inval!d_userN4me "Jessica Jones"')
+    event = create_event(
+        "kbusername1", '@flockbot rename_user inval!d_userN4me "Jessica Jones"'
+    )
     await handler.__call__(bot, event)
     assert bot.didnt_say("Renamed user")
     assert bot.said("The username you gave me contains invalid characters")
@@ -122,7 +118,7 @@ async def test_rename_user_invalid_username(client, handler, bot):
 
 @pytest.mark.asyncio
 async def test_rename_user(client, handler, bot):
-    res = client.post('/register', data={'username': "UUID1", "name": "Nick Fury"})
+    res = client.post("/register", data={"username": "UUID1", "name": "Nick Fury"})
     assert res.status_code == 200
 
     event = create_event("kbusername1", "@flockbot list_users")
@@ -141,15 +137,15 @@ async def test_rename_user(client, handler, bot):
 
 @pytest.mark.asyncio
 async def test_delete_user_invalid_username(client, handler, bot):
-    res = client.post('/register', data={'username': "UUID1", "name": "Nick Fury"})
+    res = client.post("/register", data={"username": "UUID1", "name": "Nick Fury"})
     assert res.status_code == 200
 
-    event = create_event("kbusername1", '@flockbot delete_user inval!d_userN4me')
+    event = create_event("kbusername1", "@flockbot delete_user inval!d_userN4me")
     await handler.__call__(bot, event)
     assert bot.didnt_say("has been deleted")
     assert bot.said("The username you gave me contains invalid characters")
 
-    event = create_event("kbusername1", '@flockbot delete_user UUID2')
+    event = create_event("kbusername1", "@flockbot delete_user UUID2")
     await handler.__call__(bot, event)
     assert bot.didnt_say("has been deleted")
     assert bot.said("No users with that username are registered")
@@ -161,7 +157,7 @@ async def test_delete_user(client, handler, bot):
     await handler.__call__(bot, event)
     assert bot.said("There are no registered users")
 
-    res = client.post('/register', data={'username': "UUID1", "name": "Nick Fury"})
+    res = client.post("/register", data={"username": "UUID1", "name": "Nick Fury"})
     assert res.status_code == 200
 
     event = create_event("kbusername1", "@flockbot list_users")
@@ -169,7 +165,7 @@ async def test_delete_user(client, handler, bot):
     assert bot.didnt_say("There are no registered users")
     assert bot.said("Nick Fury")
 
-    event = create_event("kbusername1", '@flockbot delete_user UUID1')
+    event = create_event("kbusername1", "@flockbot delete_user UUID1")
     await handler.__call__(bot, event)
     assert bot.said("has been deleted")
 
@@ -186,8 +182,8 @@ async def test_list_notifications(keybase_notifications, handler, bot):
     assert bot.said("user_registered")
     assert bot.said("A user has registered with the server")
     # Make all settings are enabled
-    for line in bot.message.split('\n')[1:]:
-        assert line.startswith(':white_check_mark:')
+    for line in bot.message.split("\n")[1:]:
+        assert line.startswith(":white_check_mark:")
 
 
 @pytest.mark.asyncio
@@ -203,7 +199,9 @@ async def test_enable_notification(keybase_notifications, handler, bot):
     await handler.__call__(bot, event)
     assert bot.said("Notification already enabled")
 
-    event = create_event("kbusername1", "@flockbot disable_notification user_registered")
+    event = create_event(
+        "kbusername1", "@flockbot disable_notification user_registered"
+    )
     await handler.__call__(bot, event)
     assert bot.said("Notification disabled")
 
@@ -230,11 +228,15 @@ async def test_disable_notification_invalid(keybase_notifications, handler, bot)
 
 @pytest.mark.asyncio
 async def test_disable_notification(keybase_notifications, handler, bot):
-    event = create_event("kbusername1", "@flockbot disable_notification user_registered")
+    event = create_event(
+        "kbusername1", "@flockbot disable_notification user_registered"
+    )
     await handler.__call__(bot, event)
     assert bot.said("Notification disabled")
 
-    event = create_event("kbusername1", "@flockbot disable_notification user_registered")
+    event = create_event(
+        "kbusername1", "@flockbot disable_notification user_registered"
+    )
     await handler.__call__(bot, event)
     assert bot.said("Notification already disabled")
 

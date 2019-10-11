@@ -10,6 +10,7 @@ class BotStub:
     """
     Stub for pykeybasebot.Bot
     """
+
     def __init__(self):
         class Chat:
             def __init__(self):
@@ -39,9 +40,7 @@ class BotStub:
 @pytest.fixture
 def app():
     """Create and configure a new app instance for each test."""
-    app = create_api_app({
-        'TESTING': True
-    })
+    app = create_api_app({"TESTING": True})
 
     yield app
 
@@ -52,8 +51,8 @@ def client(app):
     client = app.test_client()
 
     # Delete all users
-    Search(index='user').query('match_all').delete()
-    Index('user').refresh()
+    Search(index="user").query("match_all").delete()
+    Index("user").refresh()
 
     return client
 
@@ -63,11 +62,11 @@ def handler():
     """The keybase bot's Handler class"""
 
     # Stub the keybase environment
-    os.environ['KEYBASE_USERNAME'] = 'flockbot'
-    os.environ['KEYBASE_PAPERKEY'] = 'put your paper wallet here'
-    os.environ['KEYBASE_TEAM'] = 'keybase_team_name'
-    os.environ['KEYBASE_CHANNEL'] = 'flock_notifications_channel'
-    os.environ['KEYBASE_ADMIN_USERNAMES'] = 'kbusername1,kbusername2'
+    os.environ["KEYBASE_USERNAME"] = "flockbot"
+    os.environ["KEYBASE_PAPERKEY"] = "put your paper wallet here"
+    os.environ["KEYBASE_TEAM"] = "keybase_team_name"
+    os.environ["KEYBASE_CHANNEL"] = "flock_notifications_channel"
+    os.environ["KEYBASE_ADMIN_USERNAMES"] = "kbusername1,kbusername2"
 
     return KeybaseHandler()
 
@@ -84,8 +83,8 @@ def keybase_notifications():
     """Returns a KeybaseNotifications object"""
 
     # Delete keybase notification setting
-    Search(index='setting').query('match', key='keybase_notifications').delete()
-    Index('setting').refresh()
+    Search(index="setting").query("match", key="keybase_notifications").delete()
+    Index("setting").refresh()
 
     keybase_notifications = KeybaseNotifications()
     return keybase_notifications
