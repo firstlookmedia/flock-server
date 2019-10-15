@@ -239,17 +239,17 @@ def create_api_app(test_config=None):
         # Add keybase notifications
         for doc in docs:
             if doc["type"] in [
-                "enable_server",
-                "disable_server",
-                "enable_twig",
-                "disable_twig",
+                "server_enabled",
+                "server_disabled",
+                "twigs_enabled",
+                "twigs_disabled",
             ]:
                 details = {
                     "username": request.authorization["username"],
                     "name": get_name(),
                 }
-                if doc["type"] in ["enable_twig", "disable_twig"]:
-                    details["twig_id"] = doc["twig_id"]
+                if doc["type"] in ["twigs_enabled", "twigs_disabled"]:
+                    details["twig_ids"] = doc["twig_ids"]
                 keybase_notifications.add(doc["type"], json.dumps(details, indent=2))
 
         return api_success({"processed_count": len(docs)})

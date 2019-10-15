@@ -14,8 +14,8 @@ class KeybaseNotifications:
             # Flock logs
             "server_enabled": "A user has enabled the server",
             "server_disabled": "A user has disabled the server",
-            "twig_enabled": "A user has enabled a twig",
-            "twig_disabled": "A user has disabled a twig",
+            "twigs_enabled": "A user has enabled twigs",
+            "twigs_disabled": "A user has disabled twigs",
             # Osquery
             "reverse_shell": "A reverse shell was detected",
             # "launchd": "A new launch daemon was installed",
