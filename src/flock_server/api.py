@@ -228,14 +228,6 @@ def create_api_app(test_config=None):
                         )
                     )
 
-        # Load the user
-        results = (
-            Search(index="user")
-            .query("match", username=request.authorization["username"])
-            .execute()
-        )
-        user = results[0]
-
         # Add keybase notifications
         for doc in docs:
             if doc["type"] in [
