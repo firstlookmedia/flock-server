@@ -14,6 +14,10 @@ How you configure Elasticsearch and Kibana (for data visualizations) are outside
 
 The server also includes a [Keybase](https://keybase.io/) bot to send encrypted notifications to a Keybase team, and security staff send messages to the bot in order to administer the server.
 
+## Kibana dashboard
+
+Pre-built Kibana visualizations are in `kibana-export.json`. To use these, in your Kibana go to Management > Saved Objects, click Import and browse for this JSON file.
+
 ## Developer notes
 
 ### Test status
