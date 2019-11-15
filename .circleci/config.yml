@@ -31,11 +31,11 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
-        name: Build and push docker image
-        command: |
-          docker build -t $IMAGE_NAME:latest src
-          echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
-          docker push $IMAGE_NAME:latest
+          name: Build and push docker image
+          command: |
+            docker build -t $IMAGE_NAME:latest src
+            echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
+            docker push $IMAGE_NAME:latest
 
 workflows:
   version: 2
