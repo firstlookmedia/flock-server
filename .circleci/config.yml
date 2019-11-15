@@ -1,31 +1,50 @@
 version: 2
 
-workflows:
-  version: 2
-  test:
-    jobs:
-      - test
-
 jobs:
+
   test:
     docker:
       - image: circleci/python:3.7.4-buster
-
     steps:
       - checkout
-
-      - setup_remote_docker
-
+      - setup_remote_docker:
+          docker_layer_caching: true
       - run:
           name: Start containers
           command: docker-compose -f tests.yml up -d
-
       - run:
           name: Wait for elasticsearch
           command: |
             sleep 2;
             docker exec -it project_test-gateway_1 ./wait_for_es.sh
-
       - run:
           name: Run unit tests
           command: docker exec -it project_test-gateway_1 pipenv run python -m pytest -vvv
+
+  build:
+    environment:
+      IMAGE_NAME: micahflee/flock-server
+    docker:
+      - image: circleci/python:3.7.4-buster
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+        name: Build and push docker image
+        command: |
+          docker build -t $IMAGE_NAME:latest src
+          echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
+          docker push $IMAGE_NAME:latest
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test
+  build-master:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only: master
