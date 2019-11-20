@@ -1,18 +1,16 @@
 # Flock
 
-_**⚠️ This software is under development. It's not ready to be used in production.**_
-
 Flock is a privacy-preserving fleet management system. The goal of Flock is to gain visibility into a fleet of laptops while protecting the privacy of the laptop users. It achieves this by only collecting information needed to inform security decisions, and by not allowing the IT team to access arbitrary files or execute arbitrary code on the laptops they are monitoring.
 
 See also [Flock Agent](https://github.com/firstlookmedia/flock-agent), the macOS agent that runs on endpoints, collects data, and shares it with the server.
 
 ## About the Flock server
 
-The purpose of Flock server is to accept data from all of the agents (collected by osquery) and save it in an Elasticsearch database. Agents register themselves with the server and get assigned an authentication token, then they use these credentials to submit logs from osquery, which get saved to the database. Agents have write-only access; they cannot read anything from the database.
+The purpose of the Flock server is to accept data from all of the agents (collected by osquery) and save it in an Elasticsearch database. Agents register themselves with the server and get assigned an authentication token, then they use these credentials to submit logs from osquery, which get saved to the database. Agents have write-only access; they cannot read anything from the database.
 
-How you configure Elasticsearch and Kibana (for data visualizations) are outside the scope of this project. However we do provide a pre-built Kibana dashboard ([coming soon](https://github.com/firstlookmedia/flock/issues/1)) for visualizations we find useful.
+How you configure Elasticsearch and Kibana (for data visualizations) are outside the scope of this project. However we do provide a Docker Compose config for development, which includes Elasticsearch and Kibana servers, as well as a pre-built Kibana dashboard for visualizations we find useful.
 
-The server also includes a [Keybase](https://keybase.io/) bot to send encrypted notifications to a Keybase team, and security staff send messages to the bot in order to administer the server.
+The server also includes a [Keybase](https://keybase.io/) bot to send encrypted notifications to a Keybase team, and for security staff send messages to the bot in order to administer the Flock server.
 
 ## Kibana dashboard
 
