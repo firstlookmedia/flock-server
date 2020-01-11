@@ -23,12 +23,16 @@ RUN pip install pipenv
 RUN useradd -ms /bin/bash user
 USER user:user
 
-# Copy code
-COPY . /app
 WORKDIR /app
+COPY Pipfile .
+COPY Pipfile.lock .
+
 
 # Install python dependencies
 RUN pipenv --python /usr/local/bin/python install --dev
+
+# Copy code
+COPY . .
 
 EXPOSE 5000
 ENV FLASK_APP flock_server
