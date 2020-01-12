@@ -3,7 +3,7 @@ import secrets
 from datetime import datetime
 from functools import wraps
 
-from flask import Flask, request, Response
+from flask import Flask, request
 from elasticsearch_dsl import Index, Search
 
 from .elasticsearch import es, User
@@ -28,7 +28,7 @@ def create_api_app(test_config=None):
         return len(r) == 1
 
     def authenticate():
-        return Response(status=401, mimetype="application/json")
+        return {}, 401
 
     def requires_auth(f):
         @wraps(f)
@@ -41,19 +41,13 @@ def create_api_app(test_config=None):
         return decorated
 
     def api_error(error_msg):
-        return Response(
-            json.dumps({"error": True, "error_msg": error_msg}),
-            status=400,
-            mimetype="application/json",
-        )
+        return {"error": True, "error_msg": error_msg}, 400
 
     def api_success(success_obj=None):
         if not success_obj:
             success_obj = {}
         success_obj["error"] = False
-        return Response(
-            json.dumps(success_obj), status=200, mimetype="application/json"
-        )
+        return success_obj, 200
 
     def get_name():
         results = (
@@ -74,8 +68,10 @@ def create_api_app(test_config=None):
 
     @app.route("/register", methods=["POST"])
     def register():
-        username = request.form.get("username")
-        name = request.form.get("name", "")
+        if not request.json:
+            return api_error("Invalid JSON object")
+        username = request.json.get("username")
+        name = request.json.get("name", "")
 
         if not username:
             return api_error("You must provide a username")
@@ -133,10 +129,12 @@ def create_api_app(test_config=None):
     @app.route("/submit", methods=["POST"])
     @requires_auth
     def submit():
-        # Validate that the data is JSON
         try:
-            docs = json.loads(request.data)
+            docs = request.json
         except:
+            return api_error("Invalid JSON object")
+
+        if not docs:
             return api_error("Invalid JSON object")
 
         if type(docs) != list:
@@ -202,7 +200,7 @@ def create_api_app(test_config=None):
     def submit_flock_logs():
         # Validate that the data is JSON
         try:
-            docs = json.loads(request.data)
+            docs = request.json
         except:
             return api_error("Invalid JSON object")
 

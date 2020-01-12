@@ -83,10 +83,10 @@ async def test_list_users_empty(client, handler, bot):
 
 @pytest.mark.asyncio
 async def test_list_users_with_users(client, handler, bot):
-    res = client.post("/register", data={"username": "UUID1", "name": "Nick Fury"})
+    res = client.post("/register", json={"username": "UUID1", "name": "Nick Fury"})
     assert res.status_code == 200
 
-    res = client.post("/register", data={"username": "UUID2", "name": "Jessica Jones"})
+    res = client.post("/register", json={"username": "UUID2", "name": "Jessica Jones"})
     assert res.status_code == 200
 
     event = create_event("kbusername1", "@flockbot list_users")
@@ -100,7 +100,7 @@ async def test_list_users_with_users(client, handler, bot):
 
 @pytest.mark.asyncio
 async def test_rename_user_invalid_username(client, handler, bot):
-    res = client.post("/register", data={"username": "UUID1", "name": "Nick Fury"})
+    res = client.post("/register", json={"username": "UUID1", "name": "Nick Fury"})
     assert res.status_code == 200
 
     event = create_event(
@@ -118,7 +118,7 @@ async def test_rename_user_invalid_username(client, handler, bot):
 
 @pytest.mark.asyncio
 async def test_rename_user(client, handler, bot):
-    res = client.post("/register", data={"username": "UUID1", "name": "Nick Fury"})
+    res = client.post("/register", json={"username": "UUID1", "name": "Nick Fury"})
     assert res.status_code == 200
 
     event = create_event("kbusername1", "@flockbot list_users")
@@ -137,7 +137,7 @@ async def test_rename_user(client, handler, bot):
 
 @pytest.mark.asyncio
 async def test_delete_user_invalid_username(client, handler, bot):
-    res = client.post("/register", data={"username": "UUID1", "name": "Nick Fury"})
+    res = client.post("/register", json={"username": "UUID1", "name": "Nick Fury"})
     assert res.status_code == 200
 
     event = create_event("kbusername1", "@flockbot delete_user inval!d_userN4me")
@@ -157,7 +157,7 @@ async def test_delete_user(client, handler, bot):
     await handler.__call__(bot, event)
     assert bot.said("There are no registered users")
 
-    res = client.post("/register", data={"username": "UUID1", "name": "Nick Fury"})
+    res = client.post("/register", json={"username": "UUID1", "name": "Nick Fury"})
     assert res.status_code == 200
 
     event = create_event("kbusername1", "@flockbot list_users")
