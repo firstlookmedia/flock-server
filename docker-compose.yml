@@ -7,6 +7,8 @@ services:
       - "ELASTICSEARCH_HOSTS=http://elasticsearch:9200"
     ports:
       - "127.0.0.1:5000:5000"
+    depends_on:
+      - elasticsearch
 
   keybase:
     build: src
@@ -15,6 +17,17 @@ services:
       - "FLOCK_KEYBASE=1"
     env_file:
       - keybase.env
+    depends_on:
+      - elasticsearch
+
+  kibana:
+    image: "kibana:7.3.0"
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
 
   elasticsearch:
     image: "elasticsearch:7.3.0"
@@ -29,10 +42,3 @@ services:
       - "9200:9200"
     volumes:
       - ./data/elasticsearch:/usr/share/elasticsearch/data
-
-  kibana:
-    image: "kibana:7.3.0"
-    environment:
-      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
-    ports:
-      - "5601:5601"
