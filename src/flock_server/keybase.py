@@ -5,6 +5,7 @@ import subprocess
 import shlex
 
 import pykeybasebot
+from elasticsearch.exceptions import RequestError
 from elasticsearch_dsl import Index, Search
 
 from .elasticsearch import es, User, KeybaseNotification
@@ -210,27 +211,37 @@ class Handler:
             users[user_hit["username"]] = {"name": user_hit["name"]}
 
             # Get last updated
-            r = (
-                Search(index="flock-*")
-                .query("match", hostIdentifier=user_hit["username"])
-                .sort("-@timestamp")
-                .execute()
-            )
-            if len(r) > 0:
-                hit = r[0]
-                users[user_hit["username"]]["last_updated"] = hit["calendarTime"]
+            try:
+                r = (
+                    Search(index="flock-*")
+                    .query("match", hostIdentifier=user_hit["username"])
+                    .sort("-@timestamp")
+                    .execute()
+                )
+                if len(r) > 0:
+                    hit = r[0]
+                    users[user_hit["username"]]["last_updated"] = hit["calendarTime"]
+            except RequestError:
+                # Ignoring this exception, because it will get triggered if an index it's searching doesn't
+                # have a mapping for @timestamp, which happens in the tests. And there doesn't seem to be
+                # a way to use elasticsearch_dsl to call `.sort` with `ignore_unmapped`...
+                # RequestError(400, 'search_phase_execution_exception', 'No mapping found for [@timestamp] in order to sort on')
+                pass
 
             # Get OS version
-            r = (
-                Search(index="flock-*")
-                .query("match", hostIdentifier=user_hit["username"])
-                .query("match", name="os_version")
-                .sort("-@timestamp")
-                .execute()
-            )
-            if len(r) > 0:
-                hit = r[0]
-                users[user_hit["username"]]["os_version"] = f"{hit['columns']['name']} {hit['columns']['version']}"
+            try:
+                r = (
+                    Search(index="flock-*")
+                    .query("match", hostIdentifier=user_hit["username"])
+                    .query("match", name="os_version")
+                    .sort("-@timestamp")
+                    .execute()
+                )
+                if len(r) > 0:
+                    hit = r[0]
+                    users[user_hit["username"]]["os_version"] = f"{hit['columns']['name']} {hit['columns']['version']}"
+            except RequestError:
+                pass
 
         # Map names to usernames
         names = {}
