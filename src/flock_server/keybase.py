@@ -3,7 +3,6 @@ import logging
 import os
 import subprocess
 import shlex
-from concurrent.futures import TimeoutError
 
 import pykeybasebot
 from elasticsearch_dsl import Index, Search
@@ -64,7 +63,7 @@ class Handler:
             if event.msg.channel.members_type == "team":
                 # Is the bot mentioned?
                 mentioned = False
-                if event.msg.content.text.user_mentions:
+                if event.msg.content.text and event.msg.content.text.user_mentions:
                     for user_mention in event.msg.content.text.user_mentions:
                         if user_mention.text == os.environ.get("KEYBASE_USERNAME"):
                             mentioned = True
@@ -94,7 +93,7 @@ class Handler:
                             event.msg.sender.username
                         ),
                     )
-                except TimeoutError:
+                except asyncio.exceptions.TimeoutError:
                     pass
                 return
 
@@ -126,7 +125,7 @@ class Handler:
         print("Sending message to {}: {}".format(event.msg.channel.name, repr(message)))
         try:
             await bot.chat.send(event.msg.channel, message)
-        except TimeoutError:
+        except asyncio.exceptions.TimeoutError:
             pass
 
     def _usage(self, cmd):
@@ -202,11 +201,52 @@ class Handler:
         )
 
     async def list_users(self, bot, event, args):
-        r = Search(index="user").query("match_all").execute()
-        users = [
-            "**{}** :point_right: **{}**".format(str(hit["username"]), str(hit["name"]))
-            for hit in r
-        ]
+        # Get all users
+        user_r = Search(index="user").query("match_all").execute()
+
+        # Start gathering data on users
+        users = {}
+        for user_hit in user_r:
+            users[user_hit["username"]] = {"name": user_hit["name"]}
+
+            # Get last updated
+            r = (
+                Search(index="flock-*")
+                .query("match", hostIdentifier=user_hit["username"])
+                .sort("-@timestamp")
+                .execute()
+            )
+            if len(r) > 0:
+                hit = r[0]
+                users[user_hit["username"]]["last_updated"] = hit["calendarTime"]
+
+            # Get OS version
+            r = (
+                Search(index="flock-*")
+                .query("match", hostIdentifier=user_hit["username"])
+                .query("match", name="os_version")
+                .sort("-@timestamp")
+                .execute()
+            )
+            if len(r) > 0:
+                hit = r[0]
+                users[user_hit["username"]]["os_version"] = f"{hit['columns']['name']} {hit['columns']['version']}"
+
+        # Map names to usernames
+        names = {}
+        for username in users:
+            names[users[username]["name"]] = username
+
+        # Display response output, sorted by name
+        response_str = ""
+        for name in sorted(list(names)):
+            response_str += f"**{name}**\n"
+            response_str += f"username :point_right: {names[name]}\n"
+            for key in users[names[name]]:
+                if key != "name":
+                    response_str += f"{key} :point_right: {users[names[name]][key]}\n"
+            response_str += "\n"
+
         if len(users) == 0:
             await self._send(
                 bot,
@@ -219,8 +259,8 @@ class Handler:
             await self._send(
                 bot,
                 event,
-                "@{}: Here are all registered users:\n{}".format(
-                    event.msg.sender.username, "\n".join(users)
+                "@{}: Here are all registered users:\n\n{}".format(
+                    event.msg.sender.username, response_str
                 ),
             )
 
@@ -341,7 +381,7 @@ async def notification_checker(channel, bot):
             print("Sending notification: {}".format(repr(msg)))
             try:
                 await bot.chat.send(channel, msg)
-            except TimeoutError:
+            except asyncio.exceptions.TimeoutError:
                 pass
 
             keybase_notification.update(delivered=True)
@@ -349,7 +389,7 @@ async def notification_checker(channel, bot):
         Index("keybase_notification").refresh()
 
 
-async def start(bot, channel):
+async def welcome_message(channel, bot):
     # Wait for keybase to be available
     tries = 1
     while True:
@@ -358,21 +398,21 @@ async def start(bot, channel):
             print("Ensuring bot is initialized...")
             await bot.chat.send(channel, ":zzz:" * tries)
             break
-        except TimeoutError:
+        except asyncio.exceptions.TimeoutError:
             tries += 1
 
     # Send welcome message
-    try:
-        await bot.chat.send(
-            channel,
-            "Hello, friends! I'm a :robot_face:, and my process just woke up. Ask me for `help` for a list of commands.",
-        )
-    except TimeoutError:
-        pass
+    await bot.chat.send(
+        channel,
+        "Hello, friends! I'm a :robot_face:, and my process just woke up. Ask me for `help` for a list of commands.",
+    )
 
-    # Start listening
+
+async def start(bot, channel):
     await asyncio.gather(
-        bot.start({"filter_channel": channel}), notification_checker(channel, bot)
+        bot.start({"filter_channel": channel}),
+        notification_checker(channel, bot),
+        welcome_message(channel, bot),
     )
 
 
