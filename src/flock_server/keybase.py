@@ -215,12 +215,13 @@ class Handler:
                 r = (
                     Search(index="flock-*")
                     .query("match", hostIdentifier=user_hit["username"])
-                    .sort("-@timestamp")
+                    .sort("-@timestamp")[0:1]
                     .execute()
                 )
+
                 if len(r) > 0:
                     hit = r[0]
-                    users[user_hit["username"]]["last_updated"] = hit["calendarTime"]
+                    users[user_hit.username]["last_updated"] = hit.calendarTime
             except RequestError:
                 # Ignoring this exception, because it will get triggered if an index it's searching doesn't
                 # have a mapping for @timestamp, which happens in the tests. And there doesn't seem to be
@@ -234,12 +235,14 @@ class Handler:
                     Search(index="flock-*")
                     .query("match", hostIdentifier=user_hit["username"])
                     .query("match", name="os_version")
-                    .sort("-@timestamp")
+                    .sort("-@timestamp")[0:1]
                     .execute()
                 )
                 if len(r) > 0:
                     hit = r[0]
-                    users[user_hit["username"]]["os_version"] = f"{hit['columns']['name']} {hit['columns']['version']}"
+                    users[user_hit["username"]][
+                        "os_version"
+                    ] = f"{hit.columns.name} {hit.columns.version}"
             except RequestError:
                 pass
 
@@ -250,7 +253,7 @@ class Handler:
 
         # Display response output, sorted by name
         response_str = ""
-        for name in sorted(list(names)):
+        for name in sorted(names.keys()):
             response_str += f"**{name}**\n"
             response_str += f"username :point_right: {names[name]}\n"
             for key in users[names[name]]:
