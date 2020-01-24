@@ -207,14 +207,16 @@ class Handler:
 
         # Start gathering data on users
         users = {}
+        names = {}  # mapping name to username (host UUID)
         for user_hit in user_r:
-            users[user_hit["username"]] = {"name": user_hit["name"]}
+            users[user_hit.username] = {"name": user_hit.name}
+            names[user_hit.name] = user_hit.username
 
             # Get last updated
             try:
                 r = (
                     Search(index="flock-*")
-                    .query("match", hostIdentifier=user_hit["username"])
+                    .query("match", hostIdentifier=user_hit.username)
                     .sort("-@timestamp")[0:1]
                     .execute()
                 )
@@ -233,23 +235,18 @@ class Handler:
             try:
                 r = (
                     Search(index="flock-*")
-                    .query("match", hostIdentifier=user_hit["username"])
+                    .query("match", hostIdentifier=user_hit.username)
                     .query("match", name="os_version")
                     .sort("-@timestamp")[0:1]
                     .execute()
                 )
                 if len(r) > 0:
                     hit = r[0]
-                    users[user_hit["username"]][
+                    users[user_hit.username][
                         "os_version"
                     ] = f"{hit.columns.name} {hit.columns.version}"
             except RequestError:
                 pass
-
-        # Map names to usernames
-        names = {}
-        for username in users:
-            names[users[username]["name"]] = username
 
         # Display response output, sorted by name
         response_str = ""
