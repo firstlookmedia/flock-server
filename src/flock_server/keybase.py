@@ -207,10 +207,9 @@ class Handler:
 
         # Start gathering data on users
         users = {}
-        names = {}  # mapping name to username (host UUID)
         for user_hit in user_r:
-            users[user_hit.username] = {"name": user_hit.name}
-            names[user_hit.name] = user_hit.username
+            key = (user_hit.name, user_hit.username)
+            users[key] = {}
 
             # Get last updated
             try:
@@ -223,7 +222,7 @@ class Handler:
 
                 if len(r) > 0:
                     hit = r[0]
-                    users[user_hit.username]["last_updated"] = hit.calendarTime
+                    users[key]["last_updated"] = hit.calendarTime
             except RequestError:
                 # Ignoring this exception, because it will get triggered if an index it's searching doesn't
                 # have a mapping for @timestamp, which happens in the tests. And there doesn't seem to be
@@ -242,7 +241,7 @@ class Handler:
                 )
                 if len(r) > 0:
                     hit = r[0]
-                    users[user_hit.username][
+                    users[key][
                         "os_version"
                     ] = f"{hit.columns.name} {hit.columns.version}"
             except RequestError:
@@ -250,12 +249,12 @@ class Handler:
 
         # Display response output, sorted by name
         response_str = ""
-        for name in sorted(names.keys()):
+        for name, username in sorted(users.keys()):
             response_str += f"**{name}**\n"
-            response_str += f"username :point_right: {names[name]}\n"
-            for key in users[names[name]]:
+            response_str += f"username :point_right: {username}\n"
+            for key in users[name,username]:
                 if key != "name":
-                    response_str += f"{key} :point_right: {users[names[name]][key]}\n"
+                    response_str += f"{key} :point_right: {users[name,username][key]}\n"
             response_str += "\n"
 
         if len(users) == 0:
