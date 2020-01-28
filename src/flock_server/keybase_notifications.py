@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from elasticsearch_dsl import Index
+from elasticsearch_dsl import Index, Search
 
 from .elasticsearch import es, User, Setting, KeybaseNotification
 
@@ -9,17 +9,52 @@ class KeybaseNotifications:
     def __init__(self):
         self.notifications = {
             # User registration
-            "user_registered": "A user has registered with the server",
-            "user_already_exists": "A user tried to register with an existing username (they might be trying to re-setup their Flock Agent; if so delete the existing user so they can finish registering)",
+            "user_registered": {
+                "type": "user",
+                "desc": "A user has registered with the server",
+            },
+            "user_already_exists": {
+                "type": "user",
+                "desc": "A user tried to register with an existing username (they might be trying to re-setup their Flock Agent; if so delete the existing user so they can finish registering)",
+            },
             # Flock logs
-            "server_enabled": "A user has enabled the server",
-            "server_disabled": "A user has disabled the server",
-            "twigs_enabled": "A user has enabled twigs",
-            "twigs_disabled": "A user has disabled twigs",
+            "server_enabled": {
+                "type": "flock",
+                "desc": "A user has enabled the server",
+            },
+            "server_disabled": {
+                "type": "flock",
+                "desc": "A user has disabled the server",
+            },
+            "twigs_enabled": {"type": "flock", "desc": "A user has enabled twigs"},
+            "twigs_disabled": {"type": "flock", "desc": "A user has disabled twigs"},
             # Osquery
-            "reverse_shell": "A reverse shell was detected",
-            # "launchd": "A new launch daemon was installed",
-            # "startup_items": "A new startup item was installed",
+            "reverse_shell": {
+                "type": "osquery",
+                "desc": "A reverse shell was detected",
+            },
+            "os_version": {"type": "osquery", "desc": "OS version has changed"},
+            "safari_extensions": {
+                "type": "osquery",
+                "desc": "Opera extension has changed",
+            },
+            "opera_extensions": {
+                "type": "osquery",
+                "desc": "Opera extension has changed",
+            },
+            "chrome_extensions": {
+                "type": "osquery",
+                "desc": "Chrome extension has changed",
+            },
+            "firefox_addons": {"type": "osquery", "desc": "Firefox add-on has changed"},
+            "launchd": {"type": "osquery", "desc": "Launch daemon has changed"},
+            "startup_items": {"type": "osquery", "desc": "Startup item has changed"},
+            "crontab": {"type": "osquery", "desc": "Cron job has changed"},
+            "kextstat": {"type": "osquery", "desc": "Kernel extension has changed"},
+            "installed_applications": {
+                "type": "osquery",
+                "desc": "Applications have changed",
+            },
         }
         self.warnings = ["reverse_shell"]
 
@@ -114,7 +149,8 @@ class KeybaseNotifications:
                 notification_settings[notification] = False
                 self._save_settings(notification_settings)
 
-    def add(self, notification, details):
+    def add(self, notification, osquery_result):
+        details = json.dumps(osquery_result, indent=2)
         if self._is_enabled(notification):
             # Create a new keybase notification
             keybase_notification = KeybaseNotification(
@@ -126,9 +162,22 @@ class KeybaseNotifications:
             keybase_notification.save()
 
     def format(self, notification, details):
-        if notification in self.warnings:
-            return "@here :warning: :rotating_light:{}:rotating_light::\n```\n{}\n```".format(
-                self.notifications[notification], details
-            )
+        details_obj = json.loads(details)
+        if self.notifications[notification]["type"] == "osquery":
+            # osquery notifications
+            username = details_obj["hostIdentifier"]
+            name = details_obj["user_name"]
+            action = details_obj["action"]
+            time = details_obj["calendarTime"]
+            columns = json.dumps(details_obj["columns"], indent=2)
+
+            message = f"- Computer affected: **{name}** (`{username}`)\n- Date: {time}\n- Action: {action}\n```\n{columns}```"
+
         else:
-            return "{}:\n```\n{}\n```".format(self.notifications[notification], details)
+            # user and flock notifications
+            message = f"```{json.dumps(details_obj, indent=2)}```"
+
+        if notification in self.warnings:
+            return f"@here **:warning: :rotating_light:{self.notifications[notification]['desc']}:rotating_light:**:\n{message}"
+        else:
+            return f"**{self.notifications[notification]['desc']}:**\n{message}"
