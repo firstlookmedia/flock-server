@@ -41,7 +41,21 @@ def create_api_app(test_config=None):
         return decorated
 
     def api_error(error_msg):
-        app.logger.debug(f"api_error: {error_msg}")
+        auth = request.authorization
+        headers = []
+        for header in list(request.headers):
+            if header[0].lower() != 'authorization':
+                headers.append(header)
+        error_details = {
+            "username": auth.username,
+            "method": request.method,
+            "path": request.path,
+            "headers": headers,
+            "body": request.get_data(),
+            "error_msg": error_msg,
+        }
+        app.logger.debug(f"API error: {error_details}")
+
         return {"error": True, "error_msg": error_msg}, 400
 
     def api_success(success_obj=None):
