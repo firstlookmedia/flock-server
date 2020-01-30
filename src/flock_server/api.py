@@ -41,6 +41,7 @@ def create_api_app(test_config=None):
         return decorated
 
     def api_error(error_msg):
+        app.logger.debug(f"api_error: {error_msg}")
         return {"error": True, "error_msg": error_msg}, 400
 
     def api_success(success_obj=None):
