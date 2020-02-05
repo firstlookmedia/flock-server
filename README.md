@@ -43,8 +43,7 @@ Here's how to run server tests:
 
 ```
 # start test containers
-docker-compose -f tests.yml build
-docker-compose -f tests.yml up -d
+docker-compose -f tests.yml up --build --force-recreate -d
 docker exec -it flock-server_test-gateway_1 ./wait_for_es.sh
 
 # run tests
