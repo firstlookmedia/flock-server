@@ -41,19 +41,24 @@ def create_api_app(test_config=None):
         return decorated
 
     def api_error(error_msg):
-        auth = request.authorization
         headers = []
         for header in list(request.headers):
-            if header[0].lower() != 'authorization':
+            if header[0].lower() != "authorization":
                 headers.append(header)
+
         error_details = {
-            "username": auth.username,
             "method": request.method,
             "path": request.path,
             "headers": headers,
             "body": request.get_data(),
             "error_msg": error_msg,
         }
+
+        # If this is an authenticated API request, add the username
+        auth = request.authorization
+        if auth:
+            error_details["username"] = auth.username
+
         app.logger.debug(f"API error: {error_details}")
 
         return {"error": True, "error_msg": error_msg}, 400
@@ -113,8 +118,7 @@ def create_api_app(test_config=None):
         r = Search(index="user").query("match", username=username).execute()
         if len(r) != 0:
             keybase_notifications.add(
-                "user_already_exists",
-                json.dumps({"username": username, "name": name}, indent=2),
+                "user_already_exists", {"username": username, "name": name},
             )
 
             return api_error(
@@ -129,8 +133,7 @@ def create_api_app(test_config=None):
         Index("user").refresh()
 
         keybase_notifications.add(
-            "user_registered",
-            json.dumps({"username": username, "name": name}, indent=2),
+            "user_registered", {"username": username, "name": name},
         )
 
         return api_success({"auth_token": user.token})
@@ -177,6 +180,15 @@ def create_api_app(test_config=None):
         )
         user = results[0]
 
+        # Make a list of the types of docs that should trigger notifications
+        notification_names = []
+        for key in keybase_notifications.notifications:
+            if keybase_notifications.notifications[key]["type"] == "osquery":
+                notification_names.append(key)
+
+        # Dictionary that sorts incoming docs by notification type
+        docs_by_type = {}
+
         # Add data to ElasticSearch
         for doc in docs:
             # Convert 'unixTime' to '@timestamp'
@@ -185,28 +197,17 @@ def create_api_app(test_config=None):
                     int(doc["unixTime"])
                 ).strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
-            # Should we send a keybase notification?
-            if "name" in doc:
-                # reverse_shell
-                if doc["name"] == "reverse_shell":
-                    keybase_notifications.add(
-                        "reverse_shell",
-                        json.dumps(
-                            {
-                                "username": request.authorization["username"],
-                                "name": get_name(),
-                                "osquery_result": doc,
-                            },
-                            indent=2,
-                        ),
-                    )
-
-            # Tag with user's name
+            # Tag
+            doc["username"] = request.authorization["username"]
             doc["user_name"] = user.name
 
             # Add data
             index = "flock-{}".format(datetime.now().strftime("%Y-%m-%d"))
             es.index(index=index, doc_type="osquery", body=doc)
+
+            # Send keybase notification
+            if "name" in doc and doc["name"] in notification_names:
+                keybase_notifications.add(doc["name"], doc)
 
         return api_success({"processed_count": len(docs)})
 
@@ -255,7 +256,7 @@ def create_api_app(test_config=None):
                 }
                 if doc["type"] in ["twigs_enabled", "twigs_disabled"]:
                     details["twig_ids"] = doc["twig_ids"]
-                keybase_notifications.add(doc["type"], json.dumps(details, indent=2))
+                keybase_notifications.add(doc["type"], details)
 
         return api_success({"processed_count": len(docs)})
 
