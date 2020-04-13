@@ -190,6 +190,7 @@ def create_api_app(test_config=None):
         docs_by_type = {}
 
         # Add data to ElasticSearch
+        notification_docs = {}
         for doc in docs:
             # Convert 'unixTime' to '@timestamp'
             if "unixTime" in doc:
@@ -205,9 +206,37 @@ def create_api_app(test_config=None):
             index = "flock-{}".format(datetime.now().strftime("%Y-%m-%d"))
             es.index(index=index, doc_type="osquery", body=doc)
 
-            # Send keybase notification
+        # Figure out what notifications to send
+        for doc in docs:
             if "name" in doc and doc["name"] in notification_names:
-                keybase_notifications.add(doc["name"], doc)
+                if doc["name"] not in notification_docs:
+                    notification_docs[doc["name"]] = []
+                notification_docs[doc["name"]].append(doc)
+
+        # Send notifications
+        for key in notification_docs:
+            if len(notification_docs[key]) == 1:
+                keybase_notifications.add(key, notification_docs[key][0])
+            elif len(notification_docs[key]) > 1:
+                added_count = 0
+                removed_count = 0
+                for doc in notification_docs[key]:
+                    if doc["action"] == "added":
+                        added_count += 1
+                    elif doc["action"] == "removed":
+                        removed_count += 1
+
+                doc = notification_docs[key][0]
+                keybase_notifications.add(
+                    key,
+                    {
+                        "type": "summary",
+                        "username": doc["username"],
+                        "name": doc["user_name"],
+                        "added_count": added_count,
+                        "removed_count": removed_count,
+                    },
+                )
 
         return api_success({"processed_count": len(docs)})
 
