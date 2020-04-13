@@ -175,11 +175,11 @@ class KeybaseNotifications:
 
                 message = f"- Computer: **{name}** (`{username}`)"
                 if added_count > 0:
-                    message += "\n- **{added_count}** added"
+                    message += f"\n- **{added_count}** added"
                 if removed_count > 0:
-                    message += "\n- **{removed_count}** removed"
+                    message += f"\n- **{removed_count}** removed"
                 if other_count > 0:
-                    message += "\n- **{other_count}** unknown action"
+                    message += f"\n- **{other_count}** unknown action"
             else:
                 # Display the details of a single change
                 username = details_obj["hostIdentifier"]
