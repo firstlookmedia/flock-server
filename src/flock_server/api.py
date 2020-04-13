@@ -2,6 +2,7 @@ import json
 import secrets
 from datetime import datetime
 from functools import wraps
+from collections import defaultdict
 
 from flask import Flask, request
 from elasticsearch_dsl import Index, Search
@@ -190,7 +191,7 @@ def create_api_app(test_config=None):
         docs_by_type = {}
 
         # Add data to ElasticSearch
-        notification_docs = {}
+        notification_docs = defaultdict(list)
         for doc in docs:
             # Convert 'unixTime' to '@timestamp'
             if "unixTime" in doc:
@@ -209,8 +210,6 @@ def create_api_app(test_config=None):
         # Figure out what notifications to send
         for doc in docs:
             if "name" in doc and doc["name"] in notification_names:
-                if doc["name"] not in notification_docs:
-                    notification_docs[doc["name"]] = []
                 notification_docs[doc["name"]].append(doc)
 
         # Send notifications
