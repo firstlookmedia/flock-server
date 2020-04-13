@@ -219,11 +219,17 @@ def create_api_app(test_config=None):
             elif len(notification_docs[key]) > 1:
                 added_count = 0
                 removed_count = 0
+                other_count = 0
                 for doc in notification_docs[key]:
-                    if doc["action"] == "added":
-                        added_count += 1
-                    elif doc["action"] == "removed":
-                        removed_count += 1
+                    if "action" in doc:
+                        if doc["action"] == "added":
+                            added_count += 1
+                        elif doc["action"] == "removed":
+                            removed_count += 1
+                        else:
+                            other_count += 1
+                    else:
+                        other_count += 1
 
                 doc = notification_docs[key][0]
                 keybase_notifications.add(
@@ -234,6 +240,7 @@ def create_api_app(test_config=None):
                         "name": doc["user_name"],
                         "added_count": added_count,
                         "removed_count": removed_count,
+                        "other_count": other_count,
                     },
                 )
 
