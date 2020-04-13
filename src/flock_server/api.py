@@ -213,14 +213,14 @@ def create_api_app(test_config=None):
                 notification_docs[doc["name"]].append(doc)
 
         # Send notifications
-        for key in notification_docs:
-            if len(notification_docs[key]) == 1:
-                keybase_notifications.add(key, notification_docs[key][0])
-            elif len(notification_docs[key]) > 1:
+        for key, value in notification_docs.items():
+            if len(value) == 1:
+                keybase_notifications.add(key, value[0])
+            elif len(value) > 1:
                 added_count = 0
                 removed_count = 0
                 other_count = 0
-                for doc in notification_docs[key]:
+                for doc in value:
                     if "action" in doc:
                         if doc["action"] == "added":
                             added_count += 1
@@ -231,7 +231,7 @@ def create_api_app(test_config=None):
                     else:
                         other_count += 1
 
-                doc = notification_docs[key][0]
+                doc = value[0]
                 keybase_notifications.add(
                     key,
                     {
