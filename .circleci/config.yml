@@ -5,7 +5,7 @@ executors:
     environment:
       IMAGE_NAME: micahflee/flock-server
     docker:
-      - image: circleci/python:3.7.4-buster
+      - image: circleci/python:3.8-buster
 
 jobs:
 

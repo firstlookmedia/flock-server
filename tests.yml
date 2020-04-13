@@ -9,7 +9,7 @@ services:
       - test-elasticsearch
 
   test-elasticsearch:
-    image: "elasticsearch:7.3.0"
+    image: "elasticsearch:7.6.2"
     environment:
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
