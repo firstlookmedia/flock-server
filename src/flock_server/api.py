@@ -231,13 +231,12 @@ def create_api_app(test_config=None):
                     else:
                         other_count += 1
 
-                doc = value[0]
                 keybase_notifications.add(
                     key,
                     {
                         "type": "summary",
-                        "username": doc["username"],
-                        "name": doc["user_name"],
+                        "username": request.authorization["username"],
+                        "name": user.name,
                         "added_count": added_count,
                         "removed_count": removed_count,
                         "other_count": other_count,
