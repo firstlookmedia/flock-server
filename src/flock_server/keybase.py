@@ -61,24 +61,6 @@ class Handler:
             event.type == pykeybasebot.EventType.CHAT
             and event.source == pykeybasebot.Source.REMOTE
         ):
-            if event.msg.channel.members_type == "team":
-                # Is the bot mentioned?
-                mentioned = False
-                if event.msg.content.text and event.msg.content.text.user_mentions:
-                    for user_mention in event.msg.content.text.user_mentions:
-                        if user_mention.text == os.environ.get("KEYBASE_USERNAME"):
-                            mentioned = True
-                            break
-                if not mentioned:
-                    return
-            else:
-                if event.msg.channel.members_type == "impteamnative":
-                    # This is a direct message
-                    pass
-                else:
-                    # This isn't in the team or a direct message, so ignore
-                    return
-
             # Only answer to admins
             keybase_admins = os.environ.get("KEYBASE_ADMIN_USERNAMES").split(",")
             if event.msg.sender.username not in keybase_admins:
@@ -89,7 +71,7 @@ class Handler:
                 )
                 try:
                     await bot.chat.send(
-                        event.msg.channel,
+                        event.msg.conv_id,
                         "Sorry @{}. I'm not configured to talk to you.".format(
                             event.msg.sender.username
                         ),
@@ -123,9 +105,9 @@ class Handler:
             await self.cmds[cmd]["exec"](bot, event, args)
 
     async def _send(self, bot, event, message):
-        print("Sending message to {}: {}".format(event.msg.channel.name, repr(message)))
+        print("Sending message to {}: {}".format(event.msg.conv_id, repr(message)))
         try:
-            await bot.chat.send(event.msg.channel, message)
+            await bot.chat.send(event.msg.conv_id, message)
         except asyncio.exceptions.TimeoutError:
             pass
 
@@ -252,7 +234,7 @@ class Handler:
         for name, username in sorted(users.keys()):
             response_str += f"**{name}**\n"
             response_str += f"username :point_right: {username}\n"
-            for key in users[name,username]:
+            for key in users[name, username]:
                 if key != "name":
                     response_str += f"{key} :point_right: {users[name,username][key]}\n"
             response_str += "\n"
@@ -378,7 +360,7 @@ class Handler:
                 )
 
 
-async def notification_checker(channel, bot):
+async def notification_checker(conv_id, bot):
     keybase_notifications = KeybaseNotifications()
     while True:
         await asyncio.sleep(30)
@@ -390,7 +372,7 @@ async def notification_checker(channel, bot):
             )
             print("Sending notification: {}".format(repr(msg)))
             try:
-                await bot.chat.send(channel, msg)
+                await bot.chat.send(conv_id, msg)
             except asyncio.exceptions.TimeoutError:
                 pass
 
@@ -399,30 +381,30 @@ async def notification_checker(channel, bot):
         Index("keybase_notification").refresh()
 
 
-async def welcome_message(channel, bot):
+async def welcome_message(conv_id, bot):
     # Wait for keybase to be available
     tries = 1
     while True:
         try:
             await asyncio.sleep(5)
             print("Ensuring bot is initialized...")
-            await bot.chat.send(channel, ":zzz:" * tries)
+            await bot.chat.send(conv_id, ":zzz:" * tries)
             break
         except asyncio.exceptions.TimeoutError:
             tries += 1
 
     # Send welcome message
     await bot.chat.send(
-        channel,
+        conv_id,
         "Hello, friends! I'm a :robot_face:, and my process just woke up. Ask me for `help` for a list of commands.",
     )
 
 
-async def start(bot, channel):
+async def start(bot, conv_id):
     await asyncio.gather(
-        bot.start({"filter_channel": channel}),
-        notification_checker(channel, bot),
-        welcome_message(channel, bot),
+        bot.start({"convs": True}),
+        notification_checker(conv_id, bot),
+        welcome_message(conv_id, bot),
     )
 
 
@@ -435,11 +417,8 @@ def start_keybase_bot():
     if not os.environ.get("KEYBASE_PAPERKEY"):
         print("Error: KEYBASE_PAPERKEY must be set")
         validated = False
-    if not os.environ.get("KEYBASE_TEAM"):
-        print("Error: KEYBASE_TEAM must be set")
-        validated = False
-    if not os.environ.get("KEYBASE_CHANNEL"):
-        print("Error: KEYBASE_CHANNEL must be set")
+    if not os.environ.get("KEYBASE_CONV_ID"):
+        print("Error: KEYBASE_CONV_ID must be set")
         validated = False
     if not os.environ.get("KEYBASE_ADMIN_USERNAMES"):
         print("Error: KEYBASE_ADMIN_USERNAMES must be set")
@@ -456,14 +435,10 @@ def start_keybase_bot():
         paperkey=os.environ.get("KEYBASE_PAPERKEY"),
         handler=Handler(),
     )
-    channel = pykeybasebot.types.chat1.ChatChannel(
-        name=os.environ.get("KEYBASE_TEAM"),
-        topic_name=os.environ.get("KEYBASE_CHANNEL"),
-        members_type="team",
-    )
+    conv_id = os.environ.get("KEYBASE_CONV_ID")
 
     # Start the bot
-    asyncio.run(start(bot, channel))
+    asyncio.run(start(bot, conv_id))
 
 
 if __name__ == "__main__":
