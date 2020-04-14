@@ -24,15 +24,20 @@ Pre-built Kibana visualizations are in `kibana-export.json`. To use these, in yo
 
 ### Keybase credentials
 
-Copy `keybase-sample.env` to `keybase.env`, and then edit it to include your dev keybase username and paperkey.
+Copy `keybase-sample.env` to `keybase.env`, and then edit it to include your dev keybase username and paperkey, and also the keybase conversation ID of the team that the bot will be in. You can find this by running:
+
+```sh
+keybase chat conv-info [keybase_team] --channel [optional_chanel_name]
+```
+
+You also must add the bot to this channel as a restricted bot.
 
 ### Running a local server
 
 To run a local server, you need Docker Compose. Then start all containers.
 
 ```sh
-docker-compose build
-docker-compose up
+docker-compose up --build --force-recreate
 ```
 
 The server web interface will be at http://127.0.0.1:5000, and Kibana will be http://127.0.0.1:5601.
