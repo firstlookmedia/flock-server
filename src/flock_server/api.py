@@ -2,6 +2,7 @@ import json
 import secrets
 from datetime import datetime
 from functools import wraps
+from collections import defaultdict
 
 from flask import Flask, request
 from elasticsearch_dsl import Index, Search
@@ -190,6 +191,7 @@ def create_api_app(test_config=None):
         docs_by_type = {}
 
         # Add data to ElasticSearch
+        notification_docs = defaultdict(list)
         for doc in docs:
             # Convert 'unixTime' to '@timestamp'
             if "unixTime" in doc:
@@ -205,9 +207,41 @@ def create_api_app(test_config=None):
             index = "flock-{}".format(datetime.now().strftime("%Y-%m-%d"))
             es.index(index=index, doc_type="osquery", body=doc)
 
-            # Send keybase notification
+        # Figure out what notifications to send
+        for doc in docs:
             if "name" in doc and doc["name"] in notification_names:
-                keybase_notifications.add(doc["name"], doc)
+                notification_docs[doc["name"]].append(doc)
+
+        # Send notifications
+        for key, value in notification_docs.items():
+            if len(value) == 1:
+                keybase_notifications.add(key, value[0])
+            elif len(value) > 1:
+                added_count = 0
+                removed_count = 0
+                other_count = 0
+                for doc in value:
+                    if "action" in doc:
+                        if doc["action"] == "added":
+                            added_count += 1
+                        elif doc["action"] == "removed":
+                            removed_count += 1
+                        else:
+                            other_count += 1
+                    else:
+                        other_count += 1
+
+                keybase_notifications.add(
+                    key,
+                    {
+                        "type": "summary",
+                        "username": request.authorization["username"],
+                        "name": user.name,
+                        "added_count": added_count,
+                        "removed_count": removed_count,
+                        "other_count": other_count,
+                    },
+                )
 
         return api_success({"processed_count": len(docs)})
 

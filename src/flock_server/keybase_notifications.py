@@ -149,13 +149,13 @@ class KeybaseNotifications:
                 notification_settings[notification] = False
                 self._save_settings(notification_settings)
 
-    def add(self, notification, osquery_result):
-        details = json.dumps(osquery_result, indent=2)
+    def add(self, notification, details):
+        details_obj = json.dumps(details, indent=2)
         if self._is_enabled(notification):
             # Create a new keybase notification
             keybase_notification = KeybaseNotification(
                 notification_type=notification,
-                details=details,
+                details=details_obj,
                 delivered=False,
                 created_at=datetime.now(),
             )
@@ -165,13 +165,30 @@ class KeybaseNotifications:
         details_obj = json.loads(details)
         if self.notifications[notification]["type"] == "osquery":
             # osquery notifications
-            username = details_obj["hostIdentifier"]
-            name = details_obj["user_name"]
-            action = details_obj["action"]
-            time = details_obj["calendarTime"]
-            columns = json.dumps(details_obj["columns"], indent=2)
+            if "type" in details_obj and details_obj["type"] == "summary":
+                # Display a summary of how many of this type of change
+                username = details_obj["username"]
+                name = details_obj["name"]
+                added_count = details_obj["added_count"]
+                removed_count = details_obj["removed_count"]
+                other_count = details_obj["other_count"]
 
-            message = f"- Computer affected: **{name}** (`{username}`)\n- Date: {time}\n- Action: {action}\n```\n{columns}```"
+                message = f"- Computer: **{name}** (`{username}`)"
+                if added_count > 0:
+                    message += f"\n- **{added_count}** added"
+                if removed_count > 0:
+                    message += f"\n- **{removed_count}** removed"
+                if other_count > 0:
+                    message += f"\n- **{other_count}** unknown action"
+            else:
+                # Display the details of a single change
+                username = details_obj["hostIdentifier"]
+                name = details_obj["user_name"]
+                action = details_obj["action"]
+                time = details_obj["calendarTime"]
+                columns = json.dumps(details_obj["columns"], indent=2)
+
+                message = f"- Computer: **{name}** (`{username}`)\n- Date: {time}\n- Action: {action}\n```\n{columns}```"
 
         else:
             # user and flock notifications

@@ -21,7 +21,7 @@ services:
       - elasticsearch
 
   kibana:
-    image: "kibana:7.3.0"
+    image: "kibana:7.6.2"
     environment:
       ELASTICSEARCH_HOSTS: http://elasticsearch:9200
     ports:
@@ -30,7 +30,7 @@ services:
       - elasticsearch
 
   elasticsearch:
-    image: "elasticsearch:7.3.0"
+    image: "elasticsearch:7.6.2"
     environment:
       - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
       - discovery.type=single-node
