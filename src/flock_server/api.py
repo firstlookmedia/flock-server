@@ -47,11 +47,15 @@ def create_api_app(test_config=None):
             if header[0].lower() != "authorization":
                 headers.append(header)
 
+        request_body = request.get_data()
+        if len(request_body) > 1024:
+            request_body = request_body[0:1024] + " [...snip...]"
+
         error_details = {
             "method": request.method,
             "path": request.path,
             "headers": headers,
-            "body": request.get_data(),
+            "body": request_body,
             "error_msg": error_msg,
         }
 
