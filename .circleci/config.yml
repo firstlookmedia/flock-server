@@ -3,7 +3,7 @@ version: 2.1
 executors:
   docker-publisher:
     environment:
-      IMAGE_NAME: micahflee/flock-server
+      IMAGE_NAME: flmcode/flock-server
     docker:
       - image: circleci/python:3.8-buster
 
