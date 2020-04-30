@@ -49,7 +49,7 @@ def create_api_app(test_config=None):
 
         request_body = request.get_data()
         if len(request_body) > 1024:
-            request_body = request_body[0:1024] + " [...snip...]"
+            request_body = request_body[0:1024] + b" [...snip...]"
 
         error_details = {
             "method": request.method,
